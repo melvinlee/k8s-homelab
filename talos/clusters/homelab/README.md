@@ -7,19 +7,16 @@ This guide outlines the steps to bootstrap a Talos control plane node with IP `1
 1. Generate the base configuration:
 ```bash
 # Generate the configuration files directly in the project structure
-talosctl gen config k8s-homelab https://192.168.1.51:6443 \
-    --output-dir talos/clusters/homelab \
-    --endpoints-192.168.1.51 \
+talosctl gen config k8s-homelab https://$CONTROL_PLANE_IP:6443 \
+    --output-dir . \
+    --endpoints=$CONTROL_PLANE_IP \
     --with-docs=false \
     --with-examples=false \
-    --install-disk=nvme0n1
+    --install-disk=/dev/nvme0n1
 ```
 
 2. Apply configuration patches:
 ```bash
-# Run CLI to get disk information on where to install talos
-talosctl get disk --nodes 192.168.1.51 --insecure
-
 # Move the generated controlplane config to the correct location
 mv talos/clusters/homelab/controlplane.yaml talos/clusters/homelab/controlplane/node1.yaml
 ```
@@ -34,7 +31,7 @@ mv talos/clusters/homelab/controlplane.yaml talos/clusters/homelab/controlplane/
 # Apply the machineconfig to the node
 talosctl apply-config \
     --insecure \
-    --nodes 192.168.1.51 \
+    --nodes $CONTROL_PLANE_IP \
     --file talos/clusters/homelab/controlplane/node1.yaml
 ```
 
@@ -42,13 +39,17 @@ talosctl apply-config \
 
 ```bash
 # Configure the endpoints
-talosctl config endpoint 192.168.1.51
+talosctl config endpoint $CONTROL_PLANE_IP
+talosctl config node $CONTROL_PLANE_IP
+
+# Export talos config, For example 
+# TALOSCONFIG="_out/talosconfig"
 
 # Bootstrap the cluster
-talosctl bootstrap --nodes 192.168.1.51
+talosctl bootstrap
 
 # Wait for the node to be ready
-talosctl health --nodes 192.168.1.51
+talosctl health
 ```
 
 ## Step 4: Configure kubectl
@@ -67,10 +68,10 @@ Your control plane node should now be running. Verify with:
 
 ```bash
 # Check Talos services
-talosctl services --nodes 192.168.1.51
+talosctl services
 
 # Check running containers
-talosctl containers --nodes 192.168.1.51
+talosctl containers
 
 # View cluster info
 kubectl cluster-info
