@@ -1,0 +1,6 @@
+prometheusRule:
+  enabled: true
+
+# New configuration format for MetalLB 0.13.0+
+crds:
+  enabled: true

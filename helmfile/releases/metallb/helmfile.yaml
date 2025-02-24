@@ -1,0 +1,11 @@
+releases:
+  - name: metallb
+    namespace: infra
+    chart: metallb/metallb
+    version: 0.14.9
+    values:
+      - values.yaml
+    hooks:
+      - events: ["postsync","post-apply"]
+        command: releases/metallb/metallb-config.sh'
+        showlogs: true

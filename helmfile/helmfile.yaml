@@ -1,0 +1,19 @@
+repositories:
+  - name: longhorn
+    url: https://charts.longhorn.io
+  - name: metallb
+    url: https://metallb.github.io/metallb
+
+environments:
+  default:
+    values:
+      - environments/production/values.yaml
+
+helmDefaults:
+  createNamespace: true
+  wait: true
+  timeout: 600
+
+helmfiles:
+  - path: releases/metallb/helmfile.yaml # metallb
+  # - path: releases/longhorn/helmfile.yaml # longhorn distribute storage
