@@ -7,5 +7,5 @@ releases:
       - values.yaml
     hooks:
       - events: ["postsync","post-apply"]
-        command: releases/metallb/metallb-config.sh'
+        command: '{{ env "HELMFILE_ROOT" }}/releases/metallb/config.sh'
         showlogs: true
