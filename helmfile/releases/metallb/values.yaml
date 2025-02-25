@@ -1,6 +1,9 @@
 prometheusRule:
   enabled: true
 
-# New configuration format for MetalLB 0.13.0+
 crds:
   enabled: true
+
+speaker:
+  # ignore the exclude-from-external-loadbalancer label
+  ignoreExcludeLB: true
