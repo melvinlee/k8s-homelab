@@ -16,7 +16,7 @@ function wait_for_crds() {
 function apply_config() {
     sleep 20
     echo "Applying Metallb config"
-    kubectl apply -f resources/pool.yaml
+    kubectl apply -f resources/pool.yaml -n metallb-system
 }
 
 function main() {
