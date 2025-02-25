@@ -21,4 +21,5 @@ helmDefaults:
 helmfiles:
   - path: releases/metallb/helmfile.yaml # metallb
   - path: releases/ingress-nginx/helmfile.yaml # ingress-nginx
+  - path: releases/pihole/helmfile.yaml # pihole
   # - path: releases/longhorn/helmfile.yaml # longhorn distribute storage
