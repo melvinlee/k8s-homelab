@@ -1,11 +1,11 @@
 releases:
   - name: metallb
-    namespace: infra
+    namespace: metallb-system
     chart: metallb/metallb
     version: 0.14.9
     values:
       - values.yaml
     hooks:
-      - events: ["postsync","post-apply"]
+      - events: ["postsync"]
         command: '{{ env "HELMFILE_ROOT" }}/releases/metallb/config.sh'
         showlogs: true

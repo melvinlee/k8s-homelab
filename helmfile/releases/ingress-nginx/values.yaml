@@ -1,0 +1,4 @@
+controller:
+  ingressClassResource:
+    # -- Name of the ingressClass
+    name: nginx-internal
