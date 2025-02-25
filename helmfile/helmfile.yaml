@@ -10,10 +10,15 @@ environments:
       - environments/production/values.yaml
 
 helmDefaults:
+  # when using helm 3.2+, automatically create release namespaces if they do not exist (default true)
   createNamespace: true
+  # performs pods restart for the resource if applicable (default false)
+  recreatePods: true
+  # wait for k8s resources via --wait. (default false)
   wait: true
   timeout: 600
 
 helmfiles:
   - path: releases/metallb/helmfile.yaml # metallb
+  - path: releases/ingress-nginx/helmfile.yaml # ingress-nginx
   # - path: releases/longhorn/helmfile.yaml # longhorn distribute storage
