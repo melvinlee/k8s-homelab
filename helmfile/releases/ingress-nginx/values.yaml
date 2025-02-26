@@ -1,4 +1,6 @@
 controller:
+  # -- Setting replica count to 2 for high availability
+  replicaCount: 2
   ingressClassResource:
     # -- Name of the ingressClass
     name: nginx-internal
