@@ -21,3 +21,8 @@ serviceDns:
     metallb.universe.tf/allow-shared-ip: pihole-svc
   type: LoadBalancer
 replicaCount: 1
+
+dnsmasq:
+  # -- Add custom dns entries to override the dns resolution. All lines will be added to the pihole dnsmasq configuration.
+  customDnsEntries:
+    - address=/nas.home/192.168.1.2
