@@ -14,9 +14,14 @@ function wait_for_crds() {
 }
 
 function apply_config() {
-    sleep 20
-    echo "Applying Metallb config"
-    kubectl apply -f resources/pool.yaml -n metallb-system
+    echo "Waiting for MetalLB controller deployment to be ready..."
+    kubectl wait --namespace metallb-system \
+        --for=condition=ready pod \
+        --selector=app.kubernetes.io/name=metallb,app.kubernetes.io/component=controller \
+        --timeout=90s
+    
+    echo "Applying MetalLB config"
+    kubectl apply --namespace metallb-system -f resources/pool.yaml 
 }
 
 function main() {
