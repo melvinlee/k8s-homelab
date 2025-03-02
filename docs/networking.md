@@ -16,7 +16,7 @@
 
 ### Core Infrastructure IPs
 - Router/Gateway: `192.168.1.1`
-- Pi-hole DNS: `192.168.1.49`
+- Pi-hole DNS: `192.168.1.250`
 
 ### MetalLB Configuration
 - IP Range: `192.168.1.200-192.168.1.250`
