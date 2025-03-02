@@ -26,3 +26,11 @@ dnsmasq:
   # -- Add custom dns entries to override the dns resolution. All lines will be added to the pihole dnsmasq configuration.
   customDnsEntries:
     - address=/nas.home/192.168.1.2
+
+resources:
+  requests:
+    cpu: 150m
+    memory: 256Mi
+  limits:
+    cpu: 300m
+    memory: 512Mi
