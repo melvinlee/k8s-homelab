@@ -1,0 +1,34 @@
+---
+# Configure Tempo to be disabled
+tempo:
+  enabled: false
+
+# Loki Configuration
+loki:
+  enabled: true
+  loki:
+    auth_enabled: false
+    commonConfig:
+      replication_factor: 1
+    storage:
+      type: filesystem
+  
+# Grafana Configuration
+grafana:
+  enabled: true
+  ingress:
+    enabled: true
+    ingressClassName: nginx-internal
+    annotations:
+      nginx.ingress.kubernetes.io/ssl-redirect: "false"
+      nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
+    hosts:
+      - grafana.home
+    path: /
+    tls: false
+
+# Mimir Configuration
+mimir:
+  enabled: true
+  mimir:
+    multitenancy_enabled: false

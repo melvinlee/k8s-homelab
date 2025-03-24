@@ -3,7 +3,7 @@ repositories:
     url: https://charts.longhorn.io
   - name: metallb
     url: https://metallb.github.io/metallb
-
+    
 environments:
   default:
     values:
@@ -23,4 +23,6 @@ helmfiles:
   - path: releases/ingress-nginx/helmfile.yaml # ingress-nginx
   - path: releases/pihole/helmfile.yaml # pihole
   - path: releases/external-dns/helmfile.yaml # external-dns
+  - path: releases/argocd/helmfile.yaml # argo cd - gitops operator
+  - path: releases/ltgm/helmfile.yaml # lgtm monitoring stack
   # - path: releases/longhorn/helmfile.yaml # longhorn distribute storage
