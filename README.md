@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://raw.githubusercontent.com/melvinlee/k8s-homelab/main/docs/assets/logo.png" align="center" width="300" height="100" alt="K8s Homelab Logo"/>
+<img src="https://raw.githubusercontent.com/melvinlee/k8s-homelab/main/docs/assets/logo.png" align="center" width="450" height="100" alt="K8s Homelab Logo"/>
 
 <!-- markdownlint-disable no-trailing-punctuation -->
 
