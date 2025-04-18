@@ -8,12 +8,36 @@
 
 </div>
 
-## Hardware
-My HomeLab consists of a bunch of bare-metal machines (Beelink Mini PC).
+## Objective 
+
+This homelab project aims to create a robust, maintainable, and scalable Kubernetes environment based on the following principles:
+
+- **Immutability**: Infrastructure is treated as immutable, with changes requiring new deployments rather than modifications to existing resources
+- **Minimalism**: Focused on essential components to reduce complexity and resource overhead
+- **API-driven Control**: All system interactions are performed through well-defined APIs, avoiding direct system manipulation
+
+Key operational approaches:
+
+- **Declarative Configuration**: Simplifying and automating Kubernetes deployments using Helm charts through structured, declarative configuration files
+- **GitOps Workflow**: Using Git repositories as the single source of truth for infrastructure and application configurations, enabling automated deployments, versioning, and rollbacks
+- **Infrastructure as Code**: Managing all infrastructure components through code to ensure consistency and repeatability
 
 ## Kubernetes
-The cluster is based on [Talos](https://www.talos.dev) with 1 control-plane node and 2 worker nodes.
 
+The cluster is based on [Talos Linux](https://www.talos.dev) with 1 control-plane node and 2 worker nodes.
+
+## Technologies and Tools
+
+- `Talos Linux`: modern Kubernetes operating system designed specifically for running Kubernetes
+- `helmfile`: a declarative specification for deploying Helm charts
+- `Longhorn`: cloud-native, distributed block storage system designed for Kubernetes
+- `metalLB`: load-balancer implementation for bare metal Kubernetes clusters, using standard routing protocols
+- `external-dns`: synchronizes exposed Kubernetes Services and Ingresses with DNS providers (pi-hole) 
+- `Argo CD`: a declarative, GitOps continuous delivery tool for Kubernetes
+
+## Hardware (Bare Metal)
+
+My HomeLab consists of a bunch of bare-metal machines (Beelink Mini PC).
 
 ## Proposed Project Repository Structure
 
