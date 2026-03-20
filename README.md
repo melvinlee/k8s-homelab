@@ -2,6 +2,14 @@
 
 <img src="https://raw.githubusercontent.com/melvinlee/k8s-homelab/main/docs/assets/logo.png" align="center" width="450" height="100" alt="K8s Homelab Logo"/>
 
+<br/>
+
+[![Talos Linux](https://img.shields.io/badge/Talos_Linux-FF7300?style=flat-square&logo=linux&logoColor=white)](https://www.talos.dev)
+[![Kubernetes](https://img.shields.io/badge/Kubernetes-326CE5?style=flat-square&logo=kubernetes&logoColor=white)](https://kubernetes.io)
+[![Argo CD](https://img.shields.io/badge/Argo_CD-EF7B4D?style=flat-square&logo=argo&logoColor=white)](https://argo-cd.readthedocs.io)
+[![Helm](https://img.shields.io/badge/Helm-0F1689?style=flat-square&logo=helm&logoColor=white)](https://helm.sh)
+[![License](https://img.shields.io/github/license/melvinlee/k8s-homelab?style=flat-square)](LICENSE)
+
 <!-- markdownlint-disable no-trailing-punctuation -->
 
 ### My homelab operations repository using k8s, gitops and ci/cd :octocat:
