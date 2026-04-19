@@ -1,3 +1,13 @@
+defaultSettings:
+  defaultReplicaCount: 1
+  storageReservedPercentageForDefaultDisk: 30
+
+persistence:
+  defaultClassReplicaCount: 1
+
+longhornUI:
+  replicas: 1
+
 resources:
   requests:
     cpu: 250m
