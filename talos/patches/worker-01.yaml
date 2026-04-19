@@ -1,0 +1,10 @@
+machine:
+  kernel:
+    modules:
+      - name: iscsi_tcp
+  install:
+    extensions:
+      - image: ghcr.io/siderolabs/iscsi-tools:v0.2.0@sha256:b30127b2f3ea6a49aa73dcf18c30da1fa1d2604da00c60519f8f00b4c6d25294
+      - image: ghcr.io/siderolabs/util-linux-tools:2.41.2@sha256:8433604b21ec56871b00f363008ab455b2ece264246be915a2d6f742ec90ffcb
+  network:
+    hostname: talos-worker-01

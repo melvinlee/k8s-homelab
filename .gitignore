@@ -2,3 +2,5 @@
 
 # Talos
 .envrc
+secrets.yaml
+talos/configs/
