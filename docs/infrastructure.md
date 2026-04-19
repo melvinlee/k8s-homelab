@@ -6,8 +6,8 @@ Node Configuration
 Control Plane:
 - Single control plane node (talos-cp-01)
 - Beelink Mini hardware
-- IP: 192.168.1.51
-- Minimum specs: 2 cores, 2GB RAM, 50GB storage
+- IP: 192.168.1.50
+- Minimum specs: 2 cores, 4GB RAM, 50GB storage
 
 Worker Nodes:
 - Two Dell Optiplex machines
@@ -22,7 +22,7 @@ graph TD
     Services --> Pods[Application Pods]
     
     subgraph Control Plane
-        API[API Server<br/>192.168.1.51]
+        API[API Server<br/>192.168.1.50]
     end
     
     subgraph Worker Nodes

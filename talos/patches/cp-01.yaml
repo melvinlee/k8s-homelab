@@ -1,0 +1,16 @@
+cluster:
+  allowSchedulingOnControlPlanes: true
+  apiServer:
+    admissionControl:
+      - name: PodSecurity
+        configuration:
+          apiVersion: pod-security.admission.config.k8s.io/v1alpha1
+          kind: PodSecurityConfiguration
+          exemptions:
+            namespaces:
+              - infra
+              - metallb-system
+
+machine:
+  network:
+    hostname: talos-cp-01
