@@ -1,0 +1,36 @@
+persistentVolumeClaim:
+  enabled: false
+
+# -- default upstream DNS 1 server to use
+DNS1: "1.1.1.1"
+# -- default upstream DNS 2 server to use
+DNS2: "192.168.1.1"
+
+ingress:
+  enabled: true
+  hosts:
+    - "pihole.home"
+serviceWeb:
+  loadBalancerIP: 192.168.1.250
+  annotations:
+    metallb.universe.tf/allow-shared-ip: pihole-svc
+  type: LoadBalancer
+serviceDns:
+  loadBalancerIP: 192.168.1.250
+  annotations:
+    metallb.universe.tf/allow-shared-ip: pihole-svc
+  type: LoadBalancer
+replicaCount: 1
+
+dnsmasq:
+  # -- Add custom dns entries to override the dns resolution. All lines will be added to the pihole dnsmasq configuration.
+  customDnsEntries:
+    - address=/nas.home/192.168.1.2
+
+resources:
+  requests:
+    cpu: 150m
+    memory: 256Mi
+  limits:
+    cpu: 300m
+    memory: 512Mi
