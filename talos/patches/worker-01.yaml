@@ -3,8 +3,19 @@ machine:
     modules:
       - name: iscsi_tcp
   install:
-    extensions:
-      - image: ghcr.io/siderolabs/iscsi-tools:v0.2.0@sha256:b30127b2f3ea6a49aa73dcf18c30da1fa1d2604da00c60519f8f00b4c6d25294
-      - image: ghcr.io/siderolabs/util-linux-tools:2.41.2@sha256:8433604b21ec56871b00f363008ab455b2ece264246be915a2d6f742ec90ffcb
+    image: factory.talos.dev/metal-installer/613e1592b2da41ae5e265e8789429f22e121aab91cb4deb6bc3c0b6262961245:v1.12.6
   network:
     hostname: talos-worker-01
+  # Data Path Mounts
+  # Provide additional data path mounts accessible to the Kubernetes Kubelet container.
+  # These mounts are necessary to provide access to the host directories,
+  # and attach volumes required by Longhorn components.
+  kubelet:
+    extraMounts:
+      - destination: /var/lib/longhorn
+        type: bind
+        source: /var/lib/longhorn
+        options:
+          - bind
+          - rshared
+          - rw

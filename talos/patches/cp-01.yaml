@@ -14,3 +14,16 @@ cluster:
 machine:
   network:
     hostname: talos-cp-01
+  # Data Path Mounts
+  # Provide additional data path mounts accessible to the Kubernetes Kubelet container.
+  # These mounts are necessary to provide access to the host directories,
+  # and attach volumes required by Longhorn components.
+  kubelet:
+    extraMounts:
+      - destination: /var/lib/longhorn
+        type: bind
+        source: /var/lib/longhorn
+        options:
+          - bind
+          - rshared
+          - rw
