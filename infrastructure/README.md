@@ -42,3 +42,19 @@ helmfile -l name=metallb apply
 ```
 
 > Run commands from the `infrastructure/` directory so relative paths in helmfile.yaml resolve correctly.
+
+## Pi-hole Web UI
+
+**URL:** <http://pihole.home/admin> (requires Pi-hole DNS) or <http://192.168.1.250/admin> (direct IP)
+
+**Retrieve the admin password:**
+
+```bash
+kubectl get secret -n infra pihole-secret -o jsonpath='{.data.password}' | base64 -d
+```
+
+**Reset the admin password:**
+
+```bash
+kubectl exec -n infra deployment/pihole -- pihole -a -p <new-password>
+```

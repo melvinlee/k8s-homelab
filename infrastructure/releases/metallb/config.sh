@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 function wait_for_crds() {
     local crds=(
         "ipaddresspools" "l2advertisements"
@@ -21,7 +23,7 @@ function apply_config() {
         --timeout=90s
     
     echo "Applying MetalLB config"
-    kubectl apply --namespace metallb-system -f resources/pool.yaml 
+    kubectl apply --namespace metallb-system -f "${SCRIPT_DIR}/resources/pool.yaml"
 }
 
 function main() {
