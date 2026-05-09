@@ -3,7 +3,7 @@ repositories:
     url: https://charts.bitnami.com/bitnami
 
 releases:
-  - name: externaldns-pihole
+  - name: externaldns-unifi
     namespace: infra
     chart: bitnami/external-dns
     version: 9.0.3

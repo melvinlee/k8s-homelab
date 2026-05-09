@@ -7,12 +7,22 @@ alertmanager:
 
 grafana:
   enabled: false
+  # Push kube-prometheus-stack's bundled dashboards as ConfigMaps even though
+  # grafana itself is disabled — the standalone Grafana sidecar picks them up.
+  forceDeployDashboards: true
+  sidecar:
+    dashboards:
+      label: grafana_dashboard
+      labelValue: "1"
+      multicluster:
+        global:
+          enabled: false
 
 nodeExporter:
-  enabled: false
+  enabled: true
 
 kubeStateMetrics:
-  enabled: false
+  enabled: true
 
 # ── Prometheus Operator ───────────────────────────────────────────────────────
 prometheusOperator:
@@ -69,6 +79,10 @@ prometheus:
 
     storageSpec:
       volumeClaimTemplate:
+        metadata:
+          annotations:
+            # Two replicas across cp-01 and worker-02 — survives single-node failure
+            longhorn.io/replica-count: "2"
         spec:
           storageClassName: longhorn
           accessModes:
