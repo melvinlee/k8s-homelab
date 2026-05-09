@@ -1,5 +1,8 @@
 replicas: 1
 
+deploymentStrategy:
+  type: Recreate
+
 # Run as non-root (grafana user 472)
 securityContext:
   runAsNonRoot: true
@@ -82,18 +85,10 @@ dashboardProviders:
 
 dashboards:
   default:
-    grafana-alloy:
-      gnetId: 21695
-      revision: 1
-      datasource: Prometheus
     loki-logs:
       gnetId: 13407
       revision: 1
       datasource: Loki
-    kubernetes-cluster:
-      gnetId: 315
-      revision: 3
-      datasource: Prometheus
     nginx-ingress:
       gnetId: 9614
       revision: 1
@@ -106,6 +101,10 @@ dashboards:
       gnetId: 13639
       revision: 2
       datasource: Loki
+    node-exporter-full:
+      gnetId: 1860
+      revision: 37
+      datasource: Prometheus
 
 grafana.ini:
   server:
@@ -117,6 +116,12 @@ grafana.ini:
   security:
     disable_gravatar: true
 
+serviceMonitor:
+  enabled: true
+  path: /metrics
+  labels:
+    release: prometheus
+
 # Admin credentials — override the default "admin/admin"
 adminUser: admin
-adminPassword: changeme
+adminPassword: ***REMOVED***
