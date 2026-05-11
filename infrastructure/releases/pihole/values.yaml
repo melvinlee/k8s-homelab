@@ -22,27 +22,11 @@ serviceDns:
   type: LoadBalancer
 replicaCount: 1
 
-extraVolumes:
-  pihole-custom-list:
-    configMap:
-      name: pihole-custom-list
-
-extraVolumeMounts:
-  pihole-custom-list:
-    mountPath: /etc/pihole/custom.list
-    subPath: custom.list
-    readOnly: false
-
-extraObjects:
-  - apiVersion: v1
-    kind: ConfigMap
-    metadata:
-      name: pihole-custom-list
-      namespace: infra
-    data:
-      custom.list: |
-        192.168.1.2 nas.home
-        192.168.1.200 litellm.home
+dnsmasq:
+  # -- Add custom dns entries to override the dns resolution. All lines will be added to the pihole dnsmasq configuration.
+  customDnsEntries:
+    - address=/nas.home/192.168.1.2
+    - address=/litellm.home/192.168.1.200
 
 resources:
   requests:
