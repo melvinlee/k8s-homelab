@@ -8,6 +8,13 @@ persistence:
 longhornUI:
   replicas: 1
 
+ingress:
+  enabled: true
+  ingressClassName: nginx-internal
+  host: longhorn.home
+  path: /
+  pathType: Prefix
+
 resources:
   requests:
     cpu: 250m
