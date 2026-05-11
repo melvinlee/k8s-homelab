@@ -28,6 +28,17 @@ dnsmasq:
     - address=/nas.home/192.168.1.2
     - address=/litellm.home/192.168.1.200
 
+extraVolumes:
+  pihole-custom-list:
+    configMap:
+      name: pihole-custom-list
+
+extraVolumeMounts:
+  pihole-custom-list:
+    mountPath: /etc/pihole/custom.list
+    subPath: custom.list
+    readOnly: false
+
 resources:
   requests:
     cpu: 150m
