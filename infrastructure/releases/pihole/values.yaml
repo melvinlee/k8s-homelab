@@ -33,6 +33,17 @@ extraVolumeMounts:
     subPath: custom.list
     readOnly: false
 
+extraObjects:
+  - apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: pihole-custom-list
+      namespace: infra
+    data:
+      custom.list: |
+        192.168.1.2 nas.home
+        192.168.1.200 litellm.home
+
 resources:
   requests:
     cpu: 150m

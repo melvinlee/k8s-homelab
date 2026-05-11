@@ -9,11 +9,3 @@ releases:
     version: 2.18.0
     values:
       - values.yaml
-    hooks:
-      - events: ["presync"]
-        command: kubectl
-        args:
-          - apply
-          - -f
-          - '{{ requiredEnv "PWD" }}/releases/pihole/resources/custom-dns-configmap.yaml'
-        showlogs: true
