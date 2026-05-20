@@ -42,10 +42,17 @@ alloy:
           separator     = "/"
           target_label  = "job"
         }
+
+        rule {
+          source_labels = ["__meta_kubernetes_pod_uid", "__meta_kubernetes_pod_container_name"]
+          separator     = "/"
+          target_label  = "__path__"
+          replacement   = "/var/log/pods/*$1/*.log"
+        }
       }
 
-      // Read logs via the Kubernetes API (avoids hostPath permission and glob issues)
-      loki.source.kubernetes "pod_logs" {
+      // Tail pod logs directly from the node filesystem via hostPath mount
+      loki.source.file "pod_logs" {
         targets    = discovery.relabel.pod_logs.output
         forward_to = [loki.process.pod_logs.receiver]
       }
@@ -83,7 +90,7 @@ alloy:
       }
 
   mounts:
-    varlog: false
+    varlog: true
     dockercontainers: false
 
   # Disable anonymous telemetry reporting
@@ -110,13 +117,11 @@ controller:
       cpu: 200m
       memory: 256Mi
 
-  securityContext: {}
+  securityContext:
+    runAsUser: 0
+    runAsGroup: 0
 
-  podSecurityContext:
-    runAsNonRoot: true
-    runAsUser: 473
-    runAsGroup: 473
-    fsGroup: 473
+  podSecurityContext: {}
 
 # RBAC — needed to discover pods via the Kubernetes API
 rbac:
