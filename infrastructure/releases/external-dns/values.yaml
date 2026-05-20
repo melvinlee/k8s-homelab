@@ -1,0 +1,60 @@
+global:
+  security:
+    allowInsecureImages: true
+
+image:
+  registry: registry.k8s.io
+  repository: external-dns/external-dns
+  tag: v0.18.0
+
+provider: webhook
+policy: upsert-only
+txtOwnerId: "homelab"
+
+extraArgs:
+  webhook-provider-url: http://localhost:8888
+
+sidecars:
+  - name: unifi-webhook
+    image: ghcr.io/kashalls/external-dns-unifi-webhook:v0.4.2
+    imagePullPolicy: IfNotPresent
+    ports:
+      - name: http
+        containerPort: 8888
+      - name: metrics
+        containerPort: 8080
+    livenessProbe:
+      httpGet:
+        path: /healthz
+        port: metrics
+      initialDelaySeconds: 10
+      timeoutSeconds: 5
+    readinessProbe:
+      httpGet:
+        path: /readyz
+        port: metrics
+      initialDelaySeconds: 10
+      timeoutSeconds: 5
+    env:
+      - name: UNIFI_HOST
+        value: "https://192.168.1.1"
+      - name: UNIFI_API_KEY
+        valueFrom:
+          secretKeyRef:
+            name: external-dns-unifi-secret
+            key: api-key
+      - name: UNIFI_INSECURE
+        value: "true"
+
+serviceAccount:
+  create: true
+  name: "external-dns-unifi"
+ingressClassFilters:
+  - nginx-internal
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 200m
+    memory: 256Mi

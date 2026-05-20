@@ -1,0 +1,107 @@
+# kube-prometheus-stack — Prometheus Operator deployment
+# Bundled subcharts are disabled; each component is managed as its own release.
+
+# ── Disable bundled subcharts ─────────────────────────────────────────────────
+alertmanager:
+  enabled: false
+
+grafana:
+  enabled: false
+  # Push kube-prometheus-stack's bundled dashboards as ConfigMaps even though
+  # grafana itself is disabled — the standalone Grafana sidecar picks them up.
+  forceDeployDashboards: true
+  sidecar:
+    dashboards:
+      label: grafana_dashboard
+      labelValue: "1"
+      multicluster:
+        global:
+          enabled: false
+
+nodeExporter:
+  enabled: true
+
+kubeStateMetrics:
+  enabled: true
+
+# ── Prometheus Operator ───────────────────────────────────────────────────────
+prometheusOperator:
+  enabled: true
+
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
+
+# ── Prometheus instance ───────────────────────────────────────────────────────
+prometheus:
+  prometheusSpec:
+    # Discover ServiceMonitors in all namespaces regardless of Helm labels
+    serviceMonitorSelectorNilUsesHelmValues: false
+    serviceMonitorSelector: {}
+    serviceMonitorNamespaceSelector: {}
+
+    # Same broad discovery for PodMonitors and ProbeMonitors
+    podMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelector: {}
+    podMonitorNamespaceSelector: {}
+
+    retention: 15d
+    walCompression: true
+
+    # Non-root security context (mirrors the old prometheus chart config)
+    securityContext:
+      runAsNonRoot: true
+      runAsUser: 65534   # nobody
+      runAsGroup: 65534
+      fsGroup: 65534
+
+    containers:
+      - name: prometheus
+        securityContext:
+          allowPrivilegeEscalation: false
+          privileged: false
+          capabilities:
+            drop:
+              - ALL
+          readOnlyRootFilesystem: false
+
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+
+    storageSpec:
+      volumeClaimTemplate:
+        metadata:
+          annotations:
+            # Two replicas across cp-01 and worker-02 — survives single-node failure
+            longhorn.io/replica-count: "2"
+        spec:
+          storageClassName: longhorn
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 10Gi
+
+# ── Built-in kube scrape jobs ─────────────────────────────────────────────────
+# Disable the default in-cluster scrape jobs that require host-network access;
+# this is a single-node homelab and these are not needed.
+kubeControllerManager:
+  enabled: false
+
+kubeScheduler:
+  enabled: false
+
+kubeEtcd:
+  enabled: false
+
+kubeProxy:
+  enabled: false

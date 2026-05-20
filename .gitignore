@@ -2,3 +2,8 @@
 
 # Talos
 .envrc
+secrets.yaml
+talos/configs/
+
+# Sensitive Helm release resources — apply manually before helmfile sync
+infrastructure/releases/*/resources/secret.yaml

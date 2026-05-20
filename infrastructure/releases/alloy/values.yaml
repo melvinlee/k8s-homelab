@@ -1,0 +1,135 @@
+# Grafana Alloy — lightweight telemetry collector (OpenTelemetry-native)
+# Deployed as a DaemonSet so every node ships logs to Loki.
+
+alloy:
+  # Alloy pipeline config: collect pod logs and forward to Loki
+  configMap:
+    content: |
+      // Discover all pods running on this node
+      discovery.kubernetes "pods" {
+        role = "pod"
+        selectors {
+          role  = "pod"
+          field = "spec.nodeName=" + sys.env("HOSTNAME")
+        }
+      }
+
+      // Relabel pod metadata into Loki labels
+      discovery.relabel "pod_logs" {
+        targets = discovery.kubernetes.pods.targets
+
+        // Drop pods that have opted out of log collection
+        rule {
+          source_labels = ["__meta_kubernetes_pod_annotation_logs_grafana_com_scrape"]
+          action        = "drop"
+          regex         = "false"
+        }
+
+        rule {
+          source_labels = ["__meta_kubernetes_namespace"]
+          target_label  = "namespace"
+        }
+        rule {
+          source_labels = ["__meta_kubernetes_pod_name"]
+          target_label  = "pod"
+        }
+        rule {
+          source_labels = ["__meta_kubernetes_pod_container_name"]
+          target_label  = "container"
+        }
+        rule {
+          source_labels = ["__meta_kubernetes_namespace", "__meta_kubernetes_pod_name"]
+          separator     = "/"
+          target_label  = "job"
+        }
+
+        rule {
+          source_labels = ["__meta_kubernetes_pod_uid", "__meta_kubernetes_pod_container_name"]
+          separator     = "/"
+          target_label  = "__path__"
+          replacement   = "/var/log/pods/*$1/*.log"
+        }
+      }
+
+      // Tail pod logs directly from the node filesystem via hostPath mount
+      loki.source.file "pod_logs" {
+        targets    = discovery.relabel.pod_logs.output
+        forward_to = [loki.process.pod_logs.receiver]
+      }
+
+      loki.process "pod_logs" {
+        forward_to = [loki.write.loki.receiver]
+
+        stage.static_labels {
+          values = {
+            cluster = "homelab",
+          }
+        }
+
+        // job is derivable from namespace+pod — keep as metadata, not a stream label
+        stage.structured_metadata {
+          values = {
+            job = "job",
+          }
+        }
+
+        stage.label_drop {
+          values = ["job"]
+        }
+      }
+
+      // Write to Loki — use the X-Scope-OrgID expected by Grafana datasource
+      loki.write "loki" {
+        endpoint {
+          url = "http://loki-gateway.monitoring.svc.cluster.local/loki/api/v1/push"
+
+          headers = {
+            "X-Scope-OrgID" = "fake",
+          }
+        }
+      }
+
+  mounts:
+    varlog: true
+    dockercontainers: false
+
+  # Disable anonymous telemetry reporting
+  enableReporting: false
+
+  # Stability level: only GA components
+  stabilityLevel: "generally-available"
+
+controller:
+  # DaemonSet — one Alloy per node
+  type: daemonset
+
+  tolerations:
+    # Allow scheduling on control-plane nodes so logs are collected everywhere
+    - key: node-role.kubernetes.io/control-plane
+      operator: Exists
+      effect: NoSchedule
+
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+  securityContext:
+    runAsUser: 0
+    runAsGroup: 0
+
+  podSecurityContext: {}
+
+# RBAC — needed to discover pods via the Kubernetes API
+rbac:
+  create: true
+
+serviceAccount:
+  create: true
+
+serviceMonitor:
+  enabled: true
+  interval: 30s
