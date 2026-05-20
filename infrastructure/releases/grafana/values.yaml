@@ -1,5 +1,15 @@
 replicas: 1
 
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: node-role/worker
+              operator: In
+              values:
+                - "true"
+
 deploymentStrategy:
   type: Recreate
 
