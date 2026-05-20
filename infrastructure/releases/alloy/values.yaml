@@ -117,13 +117,11 @@ controller:
       cpu: 200m
       memory: 256Mi
 
-  securityContext: {}
+  securityContext:
+    runAsUser: 0
+    runAsGroup: 0
 
-  podSecurityContext:
-    runAsNonRoot: true
-    runAsUser: 473
-    runAsGroup: 473
-    fsGroup: 473
+  podSecurityContext: {}
 
 # RBAC — needed to discover pods via the Kubernetes API
 rbac:
