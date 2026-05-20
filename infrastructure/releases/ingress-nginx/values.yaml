@@ -1,6 +1,15 @@
 controller:
   # -- Setting replica count to 2 for high availability
   replicaCount: 2
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: node-role/worker
+                operator: In
+                values:
+                  - "true"
   ingressClassResource:
     # -- Name of the ingressClass
     name: nginx-internal
