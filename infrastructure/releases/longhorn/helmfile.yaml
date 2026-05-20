@@ -1,0 +1,19 @@
+repositories:
+  - name: longhorn
+    url: https://charts.longhorn.io
+
+releases:
+  - name: longhorn
+    namespace: longhorn-system
+    chart: longhorn/longhorn
+    version: 1.6.2
+    values:
+      - values.yaml
+    hooks:
+      - events: ["presync"]
+        command: kubectl
+        args:
+          - apply
+          - -f
+          - '{{ requiredEnv "PWD" }}/releases/longhorn/resources/namespace.yaml'
+        showlogs: true

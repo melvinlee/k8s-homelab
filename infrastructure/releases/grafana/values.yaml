@@ -1,0 +1,127 @@
+replicas: 1
+
+deploymentStrategy:
+  type: Recreate
+
+# Run as non-root (grafana user 472)
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 472
+  runAsGroup: 472
+  fsGroup: 472
+
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  privileged: false
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: false
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+persistence:
+  enabled: true
+  storageClassName: longhorn
+  size: 5Gi
+  accessModes:
+    - ReadWriteOnce
+
+ingress:
+  enabled: true
+  ingressClassName: nginx-internal
+  hosts:
+    - grafana.home
+  path: /
+  pathType: Prefix
+
+datasources:
+  datasources.yaml:
+    apiVersion: 1
+    datasources:
+      - name: Prometheus
+        type: prometheus
+        url: http://prometheus-kube-prometheus-prometheus.monitoring.svc.cluster.local:9090
+        access: proxy
+        isDefault: true
+        jsonData:
+          timeInterval: 30s
+      - name: Loki
+        type: loki
+        url: http://loki-gateway.monitoring.svc.cluster.local
+        access: proxy
+        isDefault: false
+        jsonData:
+          maxLines: 1000
+          httpHeaderName1: "X-Scope-OrgID"
+        secureJsonData:
+          httpHeaderValue1: "fake"
+
+sidecar:
+  dashboards:
+    enabled: true
+    label: grafana_dashboard
+    labelValue: "1"
+    searchNamespace: ALL
+
+dashboardProviders:
+  dashboardproviders.yaml:
+    apiVersion: 1
+    providers:
+      - name: default
+        orgId: 1
+        folder: ""
+        type: file
+        disableDeletion: false
+        editable: true
+        options:
+          path: /var/lib/grafana/dashboards/default
+
+dashboards:
+  default:
+    loki-logs:
+      gnetId: 13407
+      revision: 1
+      datasource: Loki
+    nginx-ingress:
+      gnetId: 9614
+      revision: 1
+      datasource: Prometheus
+    loki-stack-monitoring:
+      gnetId: 14055
+      revision: 5
+      datasource: Prometheus
+    loki-app-logs:
+      gnetId: 13639
+      revision: 2
+      datasource: Loki
+    node-exporter-full:
+      gnetId: 1860
+      revision: 37
+      datasource: Prometheus
+
+grafana.ini:
+  server:
+    domain: grafana.home
+    root_url: "%(protocol)s://%(domain)s/"
+  analytics:
+    reporting_enabled: false
+    check_for_updates: false
+  security:
+    disable_gravatar: true
+
+serviceMonitor:
+  enabled: true
+  path: /metrics
+  labels:
+    release: prometheus
+
+# Admin credentials — override the default "admin/admin"
+adminUser: admin
+adminPassword: HSIA8585#969615

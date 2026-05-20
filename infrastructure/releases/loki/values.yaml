@@ -1,0 +1,172 @@
+deploymentMode: Distributed
+
+loki:
+  auth_enabled: false
+
+  commonConfig:
+    replication_factor: 1
+
+  storage:
+    type: s3
+    s3:
+      endpoint: loki-minio.monitoring.svc.cluster.local:9000
+      region: us-east-1
+      secretAccessKey: supersecretpassword
+      accessKeyId: logs-user
+      s3ForcePathStyle: true
+      insecure: true
+    bucketNames:
+      chunks: chunks
+      ruler: ruler
+      admin: admin
+
+  limits_config:
+    retention_period: 168h  # 7 days
+
+  schemaConfig:
+    configs:
+      - from: "2024-01-01"
+        store: tsdb
+        object_store: s3
+        schema: v13
+        index:
+          prefix: loki_index_
+          period: 24h
+
+monitoring:
+  serviceMonitor:
+    enabled: true
+    interval: 30s
+    labels:
+      release: prometheus
+
+# Disable single-binary and simple-scalable targets
+singleBinary:
+  replicas: 0
+
+write:
+  replicas: 0
+read:
+  replicas: 0
+backend:
+  replicas: 0
+
+# Distributed-mode microservice components
+ingester:
+  replicas: 1
+  zoneAwareReplication:
+    enabled: false
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  affinity: {}
+  persistence:
+    enabled: true
+    storageClass: longhorn
+    size: 10Gi
+
+distributor:
+  replicas: 1
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 300m
+      memory: 256Mi
+  affinity: {}
+
+querier:
+  replicas: 1
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 300m
+      memory: 256Mi
+  affinity: {}
+
+queryFrontend:
+  replicas: 1
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 300m
+      memory: 256Mi
+  affinity: {}
+
+queryScheduler:
+  replicas: 1
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
+  affinity: {}
+
+indexGateway:
+  replicas: 1
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
+  affinity: {}
+
+compactor:
+  replicas: 1
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+  affinity: {}
+  persistence:
+    enabled: true
+    storageClass: longhorn
+    size: 10Gi
+
+# Enable bundled MinIO as S3-compatible object store
+minio:
+  enabled: true
+  replicas: 1
+  drivesPerNode: 2
+  rootUser: root-user
+  rootPassword: supersecretpassword
+  users:
+    - accessKey: logs-user
+      secretKey: supersecretpassword
+      policy: readwrite
+  buckets:
+    - name: chunks
+      policy: none
+      purge: false
+    - name: ruler
+      policy: none
+      purge: false
+    - name: admin
+      policy: none
+      purge: false
+  persistence:
+    storageClass: longhorn
+    size: 20Gi
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
