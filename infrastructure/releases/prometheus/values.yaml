@@ -49,7 +49,8 @@ prometheus:
     podMonitorSelector: {}
     podMonitorNamespaceSelector: {}
 
-    retention: 15d
+    retention: 7d
+    retentionSize: 8GB
     walCompression: true
 
     # Non-root security context (mirrors the old prometheus chart config)
