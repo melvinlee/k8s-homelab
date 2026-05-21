@@ -51,9 +51,14 @@ alloy:
         }
       }
 
+      // Expand the glob in __path__ into concrete files (loki.source.file does not glob)
+      local.file_match "pod_logs" {
+        path_targets = discovery.relabel.pod_logs.output
+      }
+
       // Tail pod logs directly from the node filesystem via hostPath mount
       loki.source.file "pod_logs" {
-        targets    = discovery.relabel.pod_logs.output
+        targets    = local.file_match.pod_logs.targets
         forward_to = [loki.process.pod_logs.receiver]
       }
 
