@@ -38,6 +38,11 @@ loki:
           period: 24h
 
 monitoring:
+  dashboards:
+    enabled: true
+    namespace: monitoring
+    labels:
+      grafana_dashboard: "1"
   serviceMonitor:
     enabled: true
     interval: 30s
