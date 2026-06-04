@@ -13,3 +13,4 @@ helmfiles:
   - path: releases/pihole/helmfile.yaml # pihole
   - path: releases/external-dns/helmfile.yaml # external-dns
   - path: releases/longhorn/helmfile.yaml # longhorn distribute storage
+  - path: releases/metrics-server/helmfile.yaml # metrics-server: backs the metrics.k8s.io API (kubectl top / HPA)
