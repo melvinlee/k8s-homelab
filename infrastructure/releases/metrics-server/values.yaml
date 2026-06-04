@@ -1,0 +1,14 @@
+# On Talos Linux the kubelet serving cert is self-signed and not trusted by
+# metrics-server's CA bundle. --kubelet-insecure-tls skips cert verification
+# for the kubelet scrape. Traffic stays in-cluster so this is acceptable for
+# a homelab environment.
+args:
+  - --kubelet-insecure-tls
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 100m
+    memory: 128Mi
