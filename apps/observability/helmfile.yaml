@@ -1,0 +1,14 @@
+helmDefaults:
+  # when using helm 3.2+, automatically create release namespaces if they do not exist (default true)
+  createNamespace: true
+  # performs pods restart for the resource if applicable (default false)
+  recreatePods: true
+  # wait for k8s resources via --wait. (default false)
+  wait: true
+  timeout: 600
+
+helmfiles:
+  - path: releases/prometheus/helmfile.yaml # kube-prometheus-stack: Prometheus + Alertmanager (Grafana bundled-disabled)
+  - path: releases/loki/helmfile.yaml # loki: log aggregation
+  - path: releases/grafana/helmfile.yaml # grafana: dashboards (picks up prometheus/loki datasources + dashboard ConfigMaps)
+  - path: releases/alloy/helmfile.yaml # alloy: log/metrics collector
