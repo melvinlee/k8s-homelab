@@ -6,6 +6,12 @@ metrics:
 defaultSettings:
   defaultReplicaCount: 1
   storageReservedPercentageForDefaultDisk: 30
+  # Thin-provisioning headroom. Longhorn schedules by a volume's *requested*
+  # size, not actual usage; the default 100 lets total requested replica size
+  # equal a disk's schedulable capacity. The previous value of 30 throttled
+  # scheduling to a third of the disk and caused "insufficient storage" on the
+  # workers during cp-01 replica eviction. See #28.
+  storageOverProvisioningPercentage: 100
 
 persistence:
   defaultClassReplicaCount: 1
