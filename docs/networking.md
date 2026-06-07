@@ -12,15 +12,16 @@
 | 192.168.1.2-49     | Infrastructure       | Reserved for network    |
 | 192.168.1.50-99    | Kubernetes Nodes     | Control plane & workers |
 | 192.168.1.100-199  | DHCP Range          | Dynamic clients         |
-| 192.168.1.200-250  | MetalLB Pool        | Kubernetes services     |
+| 192.168.1.200-250  | Cilium LB-IPAM Pool | Kubernetes services     |
 
 ### Core Infrastructure IPs
 - Router/Gateway: `192.168.1.1`
 - Pi-hole DNS: `192.168.1.250`
 
-### MetalLB Configuration
+### LoadBalancer Configuration
+- Provider: Cilium LB-IPAM + L2 announcements (`CiliumLoadBalancerIPPool` + `CiliumL2AnnouncementPolicy`)
 - IP Range: `192.168.1.200-192.168.1.250`
-- Protocol: Layer 2 mode
+- Protocol: Layer 2 (ARP) announcements
 
 ### DNS Configuration
 - External DNS Provider: Cloudflare `1.1.1.1`

@@ -17,8 +17,7 @@ k8s-homelab/
 │   ├── secrets.yaml        # Cluster secrets (SOPS-encrypted)
 │   ├── configs/            # Generated machine configs (gitignored)
 │   └── patches/            # Node-specific overlays applied at bootstrap
-│       ├── controlplane.yaml   # Cluster-wide: CNI=none + kube-proxy disabled (for Cilium)
-│       ├── cp-01.yaml          # Hostname, PodSecurity exemptions, AllowSchedulingOnCP, Longhorn mounts
+│       ├── cp-01.yaml          # Hostname, CNI=none + kube-proxy disabled (Cilium), PodSecurity exemptions, AllowSchedulingOnCP, Longhorn mounts
 │       └── worker-0{1,2}.yaml  # Per-worker hostname + storage mounts
 ├── infrastructure/         # Core cluster infrastructure Helm releases managed by Helmfile
 │   ├── helmfile.yaml        # Root helmfile (includes only core infra releases)
@@ -69,10 +68,9 @@ cd apps/observability && helmfile -f releases/loki/helmfile.yaml apply
 export TALOSCONFIG="talos/configs/talosconfig"
 export CONTROL_PLANE_IP=192.168.1.50
 
-# Apply config changes to a node (cluster-wide patch first, then node patch)
+# Apply config changes to the control-plane node
 talosctl apply-config --nodes $CONTROL_PLANE_IP \
   --file talos/configs/controlplane.yaml \
-  --config-patch @talos/patches/controlplane.yaml \
   --config-patch @talos/patches/cp-01.yaml
 
 # Bootstrap (first-time only)
@@ -101,7 +99,7 @@ talosctl gen config homelab https://$CONTROL_PLANE_IP:6443 \
 
 ## Architecture Decisions
 
-**Talos CNI:** CNI is set to `none` and `kube-proxy` is disabled in the cluster-wide patch `talos/patches/controlplane.yaml` — Cilium handles both as a kube-proxy replacement (`kubeProxyReplacement: true`, reaching the API server via Talos KubePrism at `localhost:7445`). Do not configure a standard CNI or re-enable kube-proxy.
+**Talos CNI:** CNI is set to `none` and `kube-proxy` is disabled in the control-plane patch `talos/patches/cp-01.yaml` (these are cluster-bootstrap settings — only the control plane applies the CNI/kube-proxy manifests) — Cilium handles both as a kube-proxy replacement (`kubeProxyReplacement: true`, reaching the API server via Talos KubePrism at `localhost:7445`). Do not configure a standard CNI or re-enable kube-proxy.
 
 **LoadBalancer:** Cilium provides `LoadBalancer` IPs via L2 announcements (`CiliumLoadBalancerIPPool` + `CiliumL2AnnouncementPolicy`, pool `192.168.1.200-250`) — this replaces the former MetalLB release. Cilium's `l2announcements` requires the kube-proxy replacement to be enabled.
 
