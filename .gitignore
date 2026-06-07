@@ -7,3 +7,5 @@ talos/configs/
 
 # Sensitive Helm release resources — apply manually before helmfile sync
 infrastructure/releases/*/resources/secret.yaml
+# Personal, machine-local Claude Code settings
+.claude/settings.local.json
