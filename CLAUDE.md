@@ -20,40 +20,47 @@ k8s-homelab/
 │       ├── controlplane.yaml   # Cluster-wide: CNI=none + kube-proxy disabled (for Cilium)
 │       ├── cp-01.yaml          # Hostname, PodSecurity exemptions, AllowSchedulingOnCP, Longhorn mounts
 │       └── worker-0{1,2}.yaml  # Per-worker hostname + storage mounts
-└── infrastructure/         # All Helm releases managed by Helmfile
-    ├── helmfile.yaml        # Root helmfile (includes only core infra releases)
-    └── releases/            # One sub-helmfile per release
-        ├── cilium/          # CNI + kube-proxy replacement + LoadBalancer (L2), pool 192.168.1.200-250
-        ├── ingress-nginx/   # Internal ingress controller (namespace: infra)
-        ├── pihole/          # DNS + ad-block at 192.168.1.250 (namespace: infra)
-        ├── external-dns/    # Syncs Ingress hostnames → Pi-hole DNS
-        ├── longhorn/        # Distributed block storage (namespace: infra)
-        ├── prometheus/      # kube-prometheus-stack (namespace: monitoring)
-        ├── loki/            # Log aggregation (namespace: monitoring)
-        ├── grafana/         # Dashboards (namespace: monitoring)
-        ├── alloy/           # Grafana Alloy log/metrics collector (namespace: monitoring)
-        └── langfuse/        # LLM observability platform (namespace: langfuse)
+├── infrastructure/         # Core cluster infrastructure Helm releases managed by Helmfile
+│   ├── helmfile.yaml        # Root helmfile (includes only core infra releases)
+│   └── releases/            # One sub-helmfile per release
+│       ├── cilium/          # CNI + kube-proxy replacement + LoadBalancer (L2), pool 192.168.1.200-250
+│       ├── ingress-nginx/   # Internal ingress controller (namespace: infra)
+│       ├── pihole/          # DNS + ad-block at 192.168.1.250 (namespace: infra)
+│       ├── external-dns/    # Syncs Ingress hostnames → Pi-hole DNS
+│       ├── longhorn/        # Distributed block storage (namespace: infra)
+│       └── metrics-server/  # Backs metrics.k8s.io API (kubectl top / HPA)
+└── apps/                   # Application-layer Helm releases (run on top of the cluster)
+    └── observability/       # Observability stack (namespace: monitoring)
+        ├── helmfile.yaml    # Aggregating helmfile — includes the four releases below
+        └── releases/        # One sub-helmfile per release
+            ├── prometheus/  # kube-prometheus-stack
+            ├── loki/        # Log aggregation
+            ├── grafana/     # Dashboards
+            └── alloy/       # Grafana Alloy log/metrics collector
 ```
 
-> The monitoring releases (prometheus, loki, grafana, alloy) are **not** wired into `infrastructure/helmfile.yaml` root yet — each has its own `helmfile.yaml` and must be applied individually. The `langfuse` release follows the same pattern and is also applied directly.
+> The observability releases under `apps/observability/` are aggregated by `apps/observability/helmfile.yaml` and applied as a unit — they are **not** wired into the root `infrastructure/helmfile.yaml`.
 
 ## Common Commands
 
-All `helmfile` commands must be run from the `infrastructure/` directory.
+Core infra `helmfile` commands run from the `infrastructure/` directory; observability commands run from `apps/observability/`.
 
 ```bash
-# Deploy all core releases
+# Deploy all core infra releases
 cd infrastructure && helmfile apply
 
 # Preview changes before applying
 cd infrastructure && helmfile diff
 
-# Deploy a single release
+# Deploy a single core infra release
 cd infrastructure && helmfile -l name=cilium apply
-cd infrastructure && helmfile -l name=prometheus apply
 
-# Deploy a monitoring release directly
-cd infrastructure && helmfile -f releases/loki/helmfile.yaml apply
+# Deploy the whole observability stack
+cd apps/observability && helmfile apply
+
+# Deploy a single observability release
+cd apps/observability && helmfile -l name=prometheus apply
+cd apps/observability && helmfile -f releases/loki/helmfile.yaml apply
 ```
 
 ### Talos Operations
@@ -104,7 +111,7 @@ talosctl gen config homelab https://$CONTROL_PLANE_IP:6443 \
 
 **Monitoring stack architecture:** `kube-prometheus-stack` is deployed with its bundled Grafana and Alertmanager **disabled** — standalone `grafana` and a separate Alertmanager release are used instead. The bundled stack's `forceDeployDashboards: true` pushes dashboard ConfigMaps that the standalone Grafana sidecar picks up via `grafana_dashboard: "1"` labels.
 
-**Helmfile per-release pattern:** Each release has its own `releases/<name>/helmfile.yaml` + `values.yaml`. The root `infrastructure/helmfile.yaml` aggregates core infra releases via `helmfiles:` paths.
+**Helmfile per-release pattern:** Each release has its own `<name>/helmfile.yaml` + `values.yaml`. An aggregating helmfile combines them via `helmfiles:` paths — `infrastructure/helmfile.yaml` for core infra releases, `apps/observability/helmfile.yaml` for the observability stack.
 
 **Cilium post-sync hook:** The cilium release uses a `postsync` hook that runs `releases/cilium/config.sh` to apply the `CiliumLoadBalancerIPPool` and `CiliumL2AnnouncementPolicy` CRs after the chart is installed (same pattern MetalLB previously used).
 
@@ -130,4 +137,4 @@ Prompt and instruction assets live under `.claude/`, **not** `.github/` — the 
 
 ## Secrets
 
-`talos/secrets.yaml` is encrypted with SOPS/age. Never commit plaintext secrets. The `infrastructure/releases/loki/resources/secret.yaml` is similarly encrypted.
+`talos/secrets.yaml` is encrypted with SOPS/age. Never commit plaintext secrets. The `apps/observability/loki/resources/secret.yaml` is similarly encrypted.
