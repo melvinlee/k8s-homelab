@@ -148,6 +148,15 @@ compactor:
     storageClass: longhorn
     size: 10Gi
 
+# Right-size the memcached caches so they fit a 7 GiB worker node.
+# The chart default chunksCache.allocatedMemory is 8192 MB, which yields a
+# memcached request of ~9.6 GiB (allocatedMemory * 1.2) and can never schedule.
+chunksCache:
+  allocatedMemory: 2048  # MB; memcached request ≈ 2.4 GiB
+
+resultsCache:
+  allocatedMemory: 1024  # MB; memcached request ≈ 1.2 GiB
+
 # Enable bundled MinIO as S3-compatible object store
 minio:
   enabled: true
