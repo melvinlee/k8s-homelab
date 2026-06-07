@@ -1,0 +1,56 @@
+# Cilium values for Talos Linux.
+# Talos-specific settings (cgroup, capabilities, KubePrism endpoint) follow the
+# official guide: https://www.talos.dev/latest/kubernetes-guides/network/deploying-cilium/
+
+# IPAM delegates pod CIDR allocation to kube-controller-manager (per-node CIDR
+# carved from cluster.network.podSubnets = 10.244.0.0/16).
+ipam:
+  mode: kubernetes
+
+# --- kube-proxy replacement (kube-proxy is disabled in the Talos config) ---
+kubeProxyReplacement: true
+# Reach the API server directly via Talos KubePrism (machine.features.kubePrism,
+# enabled on port 7445) instead of the in-cluster Service, which doesn't exist
+# until Cilium is up.
+k8sServiceHost: localhost
+k8sServicePort: 7445
+
+# --- Talos requires Cilium to mount the host cgroup rather than auto-mounting ---
+cgroup:
+  autoMount:
+    enabled: false
+  hostRoot: /sys/fs/cgroup
+
+securityContext:
+  capabilities:
+    ciliumAgent:
+      - CHOWN
+      - KILL
+      - NET_ADMIN
+      - NET_RAW
+      - IPC_LOCK
+      - SYS_ADMIN
+      - SYS_RESOURCE
+      - DAC_OVERRIDE
+      - FOWNER
+      - SETGID
+      - SETUID
+    cleanCiliumState:
+      - NET_ADMIN
+      - SYS_ADMIN
+      - SYS_RESOURCE
+
+# --- LoadBalancer via L2 announcements (replaces MetalLB L2 mode) ---
+l2announcements:
+  enabled: true
+externalIPs:
+  enabled: true
+# L2 announcements lease-renew + IP pool reconciliation are chatty against the
+# API server; raise the client rate limit to avoid throttling warnings.
+k8sClientRateLimit:
+  qps: 10
+  burst: 20
+
+operator:
+  # Single control-plane node; one operator replica is enough.
+  replicas: 1

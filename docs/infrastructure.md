@@ -15,8 +15,8 @@ Bare-metal cluster running [Talos Linux](https://www.talos.dev/) managed via Git
 
 ```mermaid
 graph TD
-    Internet --> MetalLB[MetalLB LB<br/>192.168.1.200-250]
-    MetalLB --> Ingress[Ingress-NGINX<br/>nginx-internal]
+    Internet --> Cilium[Cilium LB L2<br/>192.168.1.200-250]
+    Cilium --> Ingress[Ingress-NGINX<br/>nginx-internal]
     Ingress --> Services[K8s Services]
     Services --> Pods[Application Pods]
     Pods --> Storage[Longhorn Storage]
@@ -49,7 +49,7 @@ k8s-homelab/
 │   ├── README.md           # Operations guide
 │   ├── helmfile.yaml       # Root: repos, defaults, active releases
 │   └── releases/           # One directory per Helm release
-│       ├── metallb/        # Load balancer (L2 mode, 192.168.1.200-250)
+│       ├── cilium/         # CNI + kube-proxy replacement + LB (L2, 192.168.1.200-250)
 │       ├── ingress-nginx/  # Ingress controller (nginx-internal)
 │       ├── pihole/         # DNS + ad-block (192.168.1.250)
 │       ├── external-dns/   # Auto DNS records from Ingress
@@ -65,7 +65,7 @@ k8s-homelab/
 |Add-on|Purpose|Docs|
 |---|---|---|
 |[Longhorn](https://github.com/longhorn/longhorn)|Distributed block storage|[helmfile.md](helmfile.md)|
-|[MetalLB](https://github.com/metallb/metallb)|Bare-metal load balancer|[helmfile.md](helmfile.md)|
+|[Cilium](https://github.com/cilium/cilium)|CNI, kube-proxy replacement, bare-metal LoadBalancer (L2)|[helmfile.md](helmfile.md)|
 |[Ingress-NGINX](https://github.com/kubernetes/ingress-nginx)|Ingress / reverse proxy|[helmfile.md](helmfile.md)|
 |[Pi-hole](https://github.com/pi-hole/pi-hole)|Home DNS server|[helmfile.md](helmfile.md)|
 |[External-DNS](https://github.com/kubernetes-sigs/external-dns)|Auto DNS from Ingress|[helmfile.md](helmfile.md)|

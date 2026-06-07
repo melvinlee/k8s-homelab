@@ -5,11 +5,9 @@ Talos Linux is already declarative by design. Every aspect of the operating syst
 ```
 talos/
 ├── patches/
-│   ├── controlplane.yaml      # CNI=none, proxy=disabled (for Cilium kube-proxy replacement)
-│   ├── worker.yaml
-│   └── nodes/
-│       ├── cp-01.yaml         # IP, hostname, disk
-│       └── worker-01.yaml
+│   ├── cp-01.yaml             # Control plane: hostname, CNI=none + proxy disabled (Cilium), PodSecurity, Longhorn mounts
+│   ├── worker-01.yaml         # Worker hostname + Longhorn mounts
+│   └── worker-02.yaml
 └── secrets.yaml               # encrypted with SOPS/age
 ```
 
@@ -38,10 +36,12 @@ talosctl gen config homelab https://$CONTROL_PLANE_IP:6443 \
 1. Apply the configuration:
 
 ```bash
-# Apply the machineconfig to the node
+# Apply the machineconfig to the control-plane node (cp-01.yaml carries the
+# Cilium CNI=none + kube-proxy disabled settings)
 talosctl apply-config \
     --nodes $CONTROL_PLANE_IP \
-    --file configs/controlplane.yaml --config-patch @patches/cp-01.yaml \
+    --file configs/controlplane.yaml \
+    --config-patch @patches/cp-01.yaml \
     --insecure
 ```
 
@@ -88,12 +88,14 @@ export WORKER_IP2=192.168.1.55
 # Apply the worker configuration
 talosctl apply-config \
     --nodes $WORKER_IP1 \
-    --file configs/worker.yaml --config-patch @patches/worker-01.yaml \
+    --file configs/worker.yaml \
+    --config-patch @patches/worker-01.yaml \
     --insecure 
 
 talosctl apply-config \
     --nodes $WORKER_IP2 \
-    --file configs/worker.yaml --config-patch @patches/worker-02.yaml \
+    --file configs/worker.yaml \
+    --config-patch @patches/worker-02.yaml \
     --insecure 
 ```
 

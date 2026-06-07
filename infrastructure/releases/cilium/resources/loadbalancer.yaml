@@ -1,0 +1,29 @@
+---
+# LoadBalancer IP pool — same range MetalLB used (192.168.1.200-250).
+apiVersion: cilium.io/v2alpha1
+kind: CiliumLoadBalancerIPPool
+metadata:
+  name: pool
+spec:
+  blocks:
+    - start: 192.168.1.200
+      stop: 192.168.1.250
+---
+# L2 announcement policy — answers ARP for LoadBalancer/externalIP addresses,
+# the Cilium equivalent of MetalLB's L2Advertisement.
+apiVersion: cilium.io/v2alpha1
+kind: CiliumL2AnnouncementPolicy
+metadata:
+  name: pool
+spec:
+  loadBalancerIPs: true
+  externalIPs: true
+  # Restrict announcements to the physical LAN NICs (skip cilium_* / lo).
+  # Talos on this hardware names them enpXsY (enp1s0 on cp-01, enp2s0 on
+  # workers); ^eth kept for predictable-name fallback.
+  interfaces:
+    - ^enp[0-9]+s[0-9]+$
+    - ^eth[0-9]+$
+  # Empty selector = announce from all nodes.
+  nodeSelector:
+    matchLabels: {}

@@ -1,4 +1,14 @@
 cluster:
+  # Disable Talos' bundled CNI (Flannel) and kube-proxy so Cilium can act as
+  # the CNI *and* the kube-proxy replacement. These are cluster-bootstrap
+  # settings — only the control plane applies the CNI/kube-proxy manifests, so
+  # they live here rather than in the worker patches. Do NOT re-enable either;
+  # Cilium owns both. See infrastructure/releases/cilium/.
+  network:
+    cni:
+      name: none
+  proxy:
+    disabled: true
   # Keep heavy workloads off the control-plane node (4 cores vs workers' 12).
   # false re-applies the node-role.kubernetes.io/control-plane:NoSchedule taint;
   # admit specific infra pods back with a matching toleration if needed. See #28.
@@ -12,7 +22,6 @@ cluster:
           exemptions:
             namespaces:
               - infra
-              - metallb-system
 
 machine:
   network:

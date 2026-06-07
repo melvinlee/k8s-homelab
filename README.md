@@ -39,7 +39,7 @@ The cluster is based on [Talos Linux](https://www.talos.dev) with 1 control-plan
 - `Talos Linux`: modern Kubernetes operating system designed specifically for running Kubernetes
 - `helmfile`: a declarative specification for deploying Helm charts
 - `Longhorn`: cloud-native, distributed block storage system designed for Kubernetes
-- `metalLB`: load-balancer implementation for bare metal Kubernetes clusters, using standard routing protocols
+- `Cilium`: eBPF-based CNI providing kube-proxy replacement and bare-metal LoadBalancer via L2 announcements
 - `external-dns`: synchronizes exposed Kubernetes Services and Ingresses with DNS providers (pi-hole) 
 - `Argo CD`: a declarative, GitOps continuous delivery tool for Kubernetes
 
@@ -75,7 +75,7 @@ k8s-homelab/
 │   │   ├── longhorn/       # Longhorn storage configuration
 │   │   │   ├── values.yaml
 │   │   │   └── helmfile.yaml
-│   │   ├── metallb/
+│   │   ├── cilium/
 │   │   │   ├── values.yaml
 │   │   │   └── helmfile.yaml
 │   │   └── ingress-nginx/

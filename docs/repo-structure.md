@@ -26,7 +26,7 @@ k8s-homelab/
 │   │   ├── longhorn/       # Longhorn storage configuration
 │   │   │   ├── values.yaml
 │   │   │   └── helmfile.yaml
-│   │   ├── metallb/
+│   │   ├── cilium/
 │   │   │   ├── values.yaml
 │   │   │   └── helmfile.yaml
 │   │   └── ingress-nginx/

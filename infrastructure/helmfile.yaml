@@ -8,7 +8,7 @@ helmDefaults:
   timeout: 600
 
 helmfiles:
-  - path: releases/metallb/helmfile.yaml # metallb
+  - path: releases/cilium/helmfile.yaml # cilium: CNI + kube-proxy replacement + LoadBalancer (L2)
   - path: releases/ingress-nginx/helmfile.yaml # ingress-nginx
   - path: releases/pihole/helmfile.yaml # pihole
   - path: releases/external-dns/helmfile.yaml # external-dns
