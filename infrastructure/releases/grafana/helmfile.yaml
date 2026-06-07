@@ -9,3 +9,5 @@ releases:
     version: 10.5.15
     values:
       - values.yaml
+      # secrets file is gitignored — admin credentials in resources/secret.yaml
+      - resources/secret.yaml

@@ -129,6 +129,5 @@ serviceMonitor:
   labels:
     release: prometheus
 
-# Admin credentials — override the default "admin/admin"
-adminUser: admin
-adminPassword: ***REMOVED***
+# Admin credentials are supplied via the gitignored resources/secret.yaml
+# (merged as an extra Helm values file in helmfile.yaml). Never commit them here.
