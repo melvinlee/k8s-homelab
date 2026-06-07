@@ -1,5 +1,8 @@
 cluster:
-  allowSchedulingOnControlPlanes: true
+  # Keep heavy workloads off the control-plane node (4 cores vs workers' 12).
+  # false re-applies the node-role.kubernetes.io/control-plane:NoSchedule taint;
+  # admit specific infra pods back with a matching toleration if needed. See #28.
+  allowSchedulingOnControlPlanes: false
   apiServer:
     admissionControl:
       - name: PodSecurity
