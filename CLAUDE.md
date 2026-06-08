@@ -26,7 +26,7 @@ k8s-homelab/
 │       ├── ingress-nginx/   # Internal ingress controller (namespace: infra)
 │       ├── pihole/          # DNS + ad-block at 192.168.1.250 (namespace: infra)
 │       ├── external-dns/    # Syncs Ingress hostnames → Pi-hole DNS
-│       ├── longhorn/        # Distributed block storage (namespace: infra)
+│       ├── longhorn/        # Distributed block storage (namespace: longhorn-system)
 │       └── metrics-server/  # Backs metrics.k8s.io API (kubectl top / HPA)
 └── apps/                   # Application-layer Helm releases (run on top of the cluster)
     └── observability/       # Observability stack (namespace: monitoring)
