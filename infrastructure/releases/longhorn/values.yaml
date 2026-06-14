@@ -5,6 +5,14 @@ metrics:
 
 defaultSettings:
   defaultReplicaCount: 1
+  # Replica Auto Balance spreads a volume's OWN replicas across nodes. It is a
+  # no-op while defaultReplicaCount is 1 (a single replica can't be spread) —
+  # enabled here so that multi-replica volumes self-balance going forward. It
+  # does NOT redistribute different single-replica volumes to even out node load
+  # (that needs a manual move or a higher replica count). Control-plane
+  # scheduling is disabled in resources/disks.sh, so balancing stays on the
+  # workers. See #49.
+  replicaAutoBalance: best-effort
   storageReservedPercentageForDefaultDisk: 30
   # Thin-provisioning headroom. Longhorn schedules by a volume's *requested*
   # size, not actual usage; the default 100 lets total requested replica size
