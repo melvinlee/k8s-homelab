@@ -18,7 +18,8 @@ k8s-homelab/
 │   ├── configs/            # Generated machine configs (gitignored)
 │   └── patches/            # Node-specific overlays applied at bootstrap
 │       ├── cp-01.yaml          # Hostname, CNI=none + kube-proxy disabled (Cilium), PodSecurity exemptions, AllowSchedulingOnCP, Longhorn mounts
-│       └── worker-0{1,2}.yaml  # Per-worker hostname + storage mounts
+│       ├── worker-0{1,2}.yaml  # Per-worker hostname + storage mounts
+│       └── worker-data-disk.yaml # UserVolumeConfig: spare SATA disk → /var/mnt/hdd (Longhorn HDD tier; both workers)
 ├── infrastructure/         # Core cluster infrastructure Helm releases managed by Helmfile
 │   ├── helmfile.yaml        # Root helmfile (includes only core infra releases)
 │   └── releases/            # One sub-helmfile per release
@@ -26,7 +27,7 @@ k8s-homelab/
 │       ├── ingress-nginx/   # Internal ingress controller (namespace: infra)
 │       ├── pihole/          # DNS + ad-block at 192.168.1.250 (namespace: infra)
 │       ├── external-dns/    # Syncs Ingress hostnames → Pi-hole DNS
-│       ├── longhorn/        # Distributed block storage (namespace: longhorn-system)
+│       ├── longhorn/        # Distributed block storage (namespace: longhorn-system); tiered ssd/hdd disks
 │       └── metrics-server/  # Backs metrics.k8s.io API (kubectl top / HPA)
 └── apps/                   # Application-layer Helm releases (run on top of the cluster)
     └── observability/       # Observability stack (namespace: monitoring)
@@ -105,7 +106,9 @@ talosctl gen config homelab https://$CONTROL_PLANE_IP:6443 \
 
 **PodSecurity exemptions:** the `infra` namespace is exempted from PodSecurity admission in `talos/patches/cp-01.yaml`. Cilium runs in `kube-system`, which is exempt cluster-wide. Add new privileged namespaces there.
 
-**Longhorn storage mounts:** Worker nodes and the control-plane require the kubelet `extraMounts` for `/var/lib/longhorn` defined in each node patch file. Any new worker node patch must include these mounts.
+**Longhorn storage mounts:** Worker nodes and the control-plane require the kubelet `extraMounts` for `/var/lib/longhorn` defined in each node patch file. Any new worker node patch must include these mounts. Workers additionally bind-mount `/var/mnt/hdd` (the spare SATA disk provisioned by `talos/patches/worker-data-disk.yaml`).
+
+**Longhorn storage tiers:** Two tagged disk tiers (see #9). The fast NVMe disk `/var/lib/longhorn` is tagged `ssd`; the default `longhorn` StorageClass pins to it (`persistence.defaultDiskSelector: ssd` in `values.yaml`), so general PVCs stay on fast storage. The HDD `/var/mnt/hdd` (workers only) is tagged `hdd` and exposed via the opt-in `longhorn-hdd` StorageClass (`resources/storageclass-hdd.yaml`) — set `storageClassName: longhorn-hdd` to land a PVC there. Disk tagging + HDD registration are applied declaratively by the `releases/longhorn/resources/disks.sh` **postsync hook** (patches `nodes.longhorn.io`, matching the NVMe disk by path so it's not tied to the generated disk key; requires `jq`). Longhorn tags are one-directional, so both tiers are tagged — tagging only the HDD would not keep default volumes off it. `defaultDiskSelector` requires the Longhorn chart **≥ 1.7** (1.6.x ignores it) — the release is pinned to 1.7.2. StorageClass parameters are immutable, but the 1.6→1.7 bump recreated the default class so it picked up the selector automatically; changing the selector later without a chart change needs a one-time `kubectl delete storageclass longhorn`.
 
 **Monitoring stack architecture:** `kube-prometheus-stack` is deployed with its bundled Grafana and Alertmanager **disabled** — standalone `grafana` and a separate Alertmanager release are used instead. The bundled stack's `forceDeployDashboards: true` pushes dashboard ConfigMaps that the standalone Grafana sidecar picks up via `grafana_dashboard: "1"` labels.
 
