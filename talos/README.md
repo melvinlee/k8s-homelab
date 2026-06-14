@@ -7,7 +7,8 @@ talos/
 ├── patches/
 │   ├── cp-01.yaml             # Control plane: hostname, CNI=none + proxy disabled (Cilium), PodSecurity, Longhorn mounts
 │   ├── worker-01.yaml         # Worker hostname + Longhorn mounts
-│   └── worker-02.yaml
+│   ├── worker-02.yaml
+│   └── worker-data-disk.yaml  # UserVolumeConfig: spare SATA disk -> /var/mnt/hdd (Longhorn HDD tier, both workers)
 └── secrets.yaml               # encrypted with SOPS/age
 ```
 
@@ -85,17 +86,21 @@ After setting up your control plane, use the following steps to add worker nodes
 export WORKER_IP1=192.168.1.54
 export WORKER_IP2=192.168.1.55
 
-# Apply the worker configuration
+# Apply the worker configuration. worker-data-disk.yaml provisions the spare
+# SATA disk as the Longhorn HDD tier (/var/mnt/hdd) and is shared by both
+# workers — it wipes + reformats the selected disk on first apply.
 talosctl apply-config \
     --nodes $WORKER_IP1 \
     --file configs/worker.yaml \
     --config-patch @patches/worker-01.yaml \
+    --config-patch @patches/worker-data-disk.yaml \
     --insecure 
 
 talosctl apply-config \
     --nodes $WORKER_IP2 \
     --file configs/worker.yaml \
     --config-patch @patches/worker-02.yaml \
+    --config-patch @patches/worker-data-disk.yaml \
     --insecure 
 ```
 

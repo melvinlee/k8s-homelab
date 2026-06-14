@@ -15,6 +15,22 @@ defaultSettings:
 
 persistence:
   defaultClassReplicaCount: 1
+  # Pin the default `longhorn` StorageClass to the fast NVMe tier (disks tagged
+  # "ssd" by releases/longhorn/resources/disks.sh) so general PVCs never land on the slow
+  # HDD. Longhorn disk tags only constrain volumes that request them, so the
+  # default class must be steered explicitly. Opt into the HDD tier with the
+  # separate `longhorn-hdd` class. Requires chart >= 1.7 (1.6.x ignores this
+  # key). See #9.
+  #
+  # NOTE: StorageClass parameters are immutable. The 1.6->1.7 chart bump
+  # recreated the default class, so it picked up the selector automatically. If
+  # you later change the selector *without* a chart change, delete the class once
+  # so Longhorn recreates it:  kubectl delete storageclass longhorn
+  # Safe — PVs reference the provisioner, not the class, and current volumes live
+  # on NVMe, so nothing reschedules.
+  defaultDiskSelector:
+    enable: true
+    selector: "ssd"
 
 longhornUI:
   replicas: 1

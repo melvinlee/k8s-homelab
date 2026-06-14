@@ -1,0 +1,17 @@
+# Opt-in bulk-storage StorageClass for the HDD tier (issue #9). PVCs that set
+# storageClassName: longhorn-hdd land on disks tagged "hdd" (/var/mnt/hdd on the
+# worker nodes). The default `longhorn` class stays pinned to the fast NVMe tier.
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: longhorn-hdd
+provisioner: driver.longhorn.io
+allowVolumeExpansion: true
+reclaimPolicy: Delete
+volumeBindingMode: Immediate
+parameters:
+  numberOfReplicas: "1"
+  staleReplicaTimeout: "30"
+  fromBackup: ""
+  diskSelector: "hdd"
+  dataLocality: "disabled"

@@ -1,0 +1,31 @@
+# Worker data disk — provisions the spare SATA disk (/dev/sda) as a Longhorn
+# bulk-storage tier. See issue #9.
+#
+# This is a standalone machine-config document (not a strategic-merge patch of
+# machine:/cluster:). Apply it *alongside* the per-worker patch:
+#
+#   talosctl apply-config --nodes $WORKER_IP \
+#     --file configs/worker.yaml \
+#     --config-patch @patches/worker-01.yaml \
+#     --config-patch @patches/worker-data-disk.yaml
+#
+# A UserVolumeConfig is auto-mounted at /var/mnt/<name>, so this volume lands at
+# /var/mnt/hdd — matching the kubelet extraMount already declared in the worker
+# patches. Talos wipes + reformats the selected disk on first apply (the disk is
+# empty, so there is nothing to preserve).
+#
+# Disk is selected by property rather than the unstable /dev/sda name: the spare
+# disk shares the sd* namespace with the iSCSI volumes Longhorn attaches, which
+# report transport "iscsi". The lone physical SATA disk is matched by
+# transport + a size floor. Control-plane is excluded — it has no such disk.
+apiVersion: v1alpha1
+kind: UserVolumeConfig
+name: hdd
+provisioning:
+  diskSelector:
+    match: disk.transport == 'sata' && disk.size > 400u * GB
+  # Consume the whole disk: start at a small floor and grow to fill it.
+  minSize: 100GB
+  grow: true
+filesystem:
+  type: xfs

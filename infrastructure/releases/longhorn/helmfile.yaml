@@ -6,7 +6,9 @@ releases:
   - name: longhorn
     namespace: longhorn-system
     chart: longhorn/longhorn
-    version: 1.6.2
+    # 1.7.x is the first chart line that wires persistence.defaultDiskSelector
+    # into the default StorageClass (needed for the ssd/hdd tiering). See #9.
+    version: 1.7.2
     values:
       - values.yaml
     hooks:
@@ -16,4 +18,19 @@ releases:
           - apply
           - -f
           - '{{ requiredEnv "PWD" }}/releases/longhorn/resources/namespace.yaml'
+        showlogs: true
+      # Register the storage tiers once the Longhorn CRDs/node CRs exist: tag the
+      # NVMe disk "ssd" and add the HDD disk (/var/mnt/hdd) on workers. See #9.
+      - events: ["postsync"]
+        command: bash
+        args:
+          - '{{ requiredEnv "PWD" }}/releases/longhorn/resources/disks.sh'
+        showlogs: true
+      # Opt-in StorageClass for the bulk HDD tier (diskSelector: hdd).
+      - events: ["postsync"]
+        command: kubectl
+        args:
+          - apply
+          - -f
+          - '{{ requiredEnv "PWD" }}/releases/longhorn/resources/storageclass-hdd.yaml'
         showlogs: true
