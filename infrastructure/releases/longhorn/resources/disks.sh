@@ -87,6 +87,16 @@ function add_hdd_disk() {
     }'
 }
 
+# Keep the control plane out of the Longhorn scheduling pool — volume replicas
+# belong on the workers (cp-01 is tainted and resource-constrained). Existing
+# replicas are not evicted; only new scheduling is disabled. See #49.
+function disable_scheduling() {
+    local node="$1"
+    echo "Disabling Longhorn scheduling on control-plane node '$node'"
+    kubectl -n "$NAMESPACE" patch nodes.longhorn.io "$node" --type=merge \
+        -p '{"spec":{"allowScheduling":false}}'
+}
+
 function main() {
     require_tools
     wait_for_crd
@@ -103,6 +113,12 @@ function main() {
     for node in $(kubectl get nodes -l node-role/worker=true \
         -o jsonpath='{.items[*].metadata.name}'); do
         add_hdd_disk "$node"
+    done
+
+    # Keep replicas off the control plane (workers carry the storage). See #49.
+    for node in $(kubectl get nodes -l node-role.kubernetes.io/control-plane \
+        -o jsonpath='{.items[*].metadata.name}'); do
+        disable_scheduling "$node"
     done
 }
 
