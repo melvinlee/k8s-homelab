@@ -30,16 +30,20 @@ k8s-homelab/
 │       ├── longhorn/        # Distributed block storage (namespace: longhorn-system); tiered ssd/hdd disks
 │       └── metrics-server/  # Backs metrics.k8s.io API (kubectl top / HPA)
 └── apps/                   # Application-layer Helm releases (run on top of the cluster)
-    └── observability/       # Observability stack (namespace: monitoring)
-        ├── helmfile.yaml    # Aggregating helmfile — includes the four releases below
-        └── releases/        # One sub-helmfile per release
-            ├── prometheus/  # kube-prometheus-stack
-            ├── loki/        # Log aggregation
-            ├── grafana/     # Dashboards
-            └── alloy/       # Grafana Alloy log/metrics collector
+    ├── observability/       # Observability stack (namespace: monitoring)
+    │   ├── helmfile.yaml    # Aggregating helmfile — includes the four releases below
+    │   └── releases/        # One sub-helmfile per release
+    │       ├── prometheus/  # kube-prometheus-stack
+    │       ├── loki/        # Log aggregation
+    │       ├── grafana/     # Dashboards
+    │       └── alloy/       # Grafana Alloy log/metrics collector
+    └── ai/                  # AI/LLM stack (namespace: langfuse)
+        ├── helmfile.yaml    # Aggregating helmfile — includes the release(s) below
+        └── releases/
+            └── langfuse/    # LLM observability / tracing (postgresql + clickhouse + valkey + minio bundled, single-replica)
 ```
 
-> The observability releases under `apps/observability/` are aggregated by `apps/observability/helmfile.yaml` and applied as a unit — they are **not** wired into the root `infrastructure/helmfile.yaml`.
+> The releases under `apps/observability/` and `apps/ai/` are each aggregated by their own `helmfile.yaml` and applied as a unit — they are **not** wired into the root `infrastructure/helmfile.yaml`.
 
 ## Common Commands
 
@@ -61,6 +65,9 @@ cd apps/observability && helmfile apply
 # Deploy a single observability release
 cd apps/observability && helmfile -l name=prometheus apply
 cd apps/observability && helmfile -f releases/loki/helmfile.yaml apply
+
+# Deploy the AI stack (Langfuse + bundled backing stores)
+cd apps/ai && helmfile -f releases/langfuse/helmfile.yaml apply
 ```
 
 ### Talos Operations

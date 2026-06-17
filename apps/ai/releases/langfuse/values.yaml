@@ -1,0 +1,155 @@
+global:
+  # All backing-store PVCs (postgresql, clickhouse, valkey, minio) are Bitnami
+  # subcharts and honour this global — keeps every volume on Longhorn.
+  defaultStorageClass: longhorn
+  security:
+    # The bundled stores default to bitnamilegacy/* images (Bitnami moved the
+    # free tier there); this flag is required for the chart to accept them.
+    allowInsecureImages: true
+
+# Core Langfuse Configuration (web + worker deployments)
+langfuse:
+  features:
+    # Homelab privacy stance — matches grafana (analytics/reporting disabled).
+    telemetryEnabled: false
+    # Leave sign-up open so the first admin account can be created, then flip to
+    # true after onboarding to lock the instance down.
+    signUpDisabled: false
+
+  # salt / nextauth.secret / encryptionKey are supplied via the gitignored
+  # resources/secret.yaml (merged on top of this file by helmfile.yaml).
+
+  nextauth:
+    # Must be the canonical externally-reachable URL (the ingress host below).
+    url: http://langfuse.home
+
+  ingress:
+    enabled: true
+    className: nginx-internal
+    hosts:
+      - host: langfuse.home
+        paths:
+          - path: /
+            pathType: Prefix
+
+  # Keep langfuse pods on worker nodes (control-plane is tainted NoSchedule, but
+  # this is explicit and mirrors the grafana release).
+  nodeSelector:
+    node-role/worker: "true"
+
+  # Run non-root and drop capabilities so the pods satisfy PodSecurity.
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+  securityContext:
+    allowPrivilegeEscalation: false
+    runAsNonRoot: true
+    capabilities:
+      drop:
+        - ALL
+    seccompProfile:
+      type: RuntimeDefault
+
+  web:
+    # langfuse-web is a Next.js SSR app. Node sizes its V8 heap to ~half the
+    # container memory limit, so a 1Gi limit caps the heap at ~512Mi and the pod
+    # aborts with "heap out of memory" (exit 134) during init. Give it 2Gi and
+    # pin the heap explicitly so it can grow without relying on cgroup detection.
+    pod:
+      additionalEnv:
+        - name: NODE_OPTIONS
+          value: "--max-old-space-size=1536"
+    resources:
+      requests:
+        cpu: 100m
+        memory: 1Gi
+      limits:
+        cpu: "1"
+        memory: 2Gi
+
+  worker:
+    resources:
+      requests:
+        cpu: 100m
+        memory: 512Mi
+      limits:
+        cpu: "1"
+        memory: 1Gi
+
+# PostgreSQL — transactional / config data (Bitnami subchart)
+postgresql:
+  deploy: true
+  # auth.password comes from resources/secret.yaml
+  primary:
+    persistence:
+      enabled: true
+      size: 8Gi
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+
+# Valkey / Redis — queue + cache (Bitnami subchart)
+redis:
+  deploy: true
+  # auth.password comes from resources/secret.yaml
+  primary:
+    # Required by langfuse — the queue must never evict keys.
+    extraFlags:
+      - "--maxmemory-policy noeviction"
+    persistence:
+      enabled: true
+      size: 4Gi
+    resources:
+      requests:
+        cpu: 50m
+        memory: 128Mi
+      limits:
+        cpu: 300m
+        memory: 256Mi
+
+# ClickHouse — traces/observations OLAP store (Bitnami subchart)
+# Chart defaults are production HA sizing (replicaCount 3, resourcesPreset
+# 2xlarge ≈ 7 CPU / 20Gi). Slim to a single node for the homelab.
+clickhouse:
+  deploy: true
+  replicaCount: 1
+  resourcesPreset: none # disable the 2xlarge preset; explicit resources below win
+  # auth.password comes from resources/secret.yaml
+  resources:
+    requests:
+      cpu: 250m
+      memory: 1Gi
+    limits:
+      cpu: "2"
+      memory: 2Gi
+  persistence:
+    enabled: true
+    size: 20Gi
+  # With replicaCount 1 the chart sets CLICKHOUSE_CLUSTER_ENABLED=false, so langfuse
+  # uses non-replicated MergeTree tables and needs no coordinator — drop the bundled
+  # Zookeeper (default is a 3-node ensemble) entirely.
+  zookeeper:
+    enabled: false
+
+# MinIO — event & media blob storage (Bitnami subchart)
+s3:
+  deploy: true
+  defaultBuckets: langfuse
+  # auth.rootPassword comes from resources/secret.yaml
+  mode: standalone
+  persistence:
+    enabled: true
+    size: 20Gi
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
