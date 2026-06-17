@@ -1,0 +1,13 @@
+repositories:
+  - name: langfuse
+    url: https://langfuse.github.io/langfuse-k8s
+
+releases:
+  - name: langfuse
+    namespace: langfuse
+    chart: langfuse/langfuse
+    version: 1.5.33 # app 3.177.0
+    values:
+      - values.yaml
+      # secrets file is gitignored — salt/nextauth/encryptionKey + store passwords in resources/secret.yaml
+      - resources/secret.yaml

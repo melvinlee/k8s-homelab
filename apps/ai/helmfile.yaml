@@ -1,0 +1,13 @@
+helmDefaults:
+  # when using helm 3.2+, automatically create release namespaces if they do not exist (default true)
+  createNamespace: true
+  # performs pods restart for the resource if applicable (default false)
+  recreatePods: true
+  # wait for k8s resources via --wait. (default false)
+  wait: true
+  # langfuse brings up four backing stores (postgresql, clickhouse + zookeeper,
+  # valkey, minio) plus migrations on first sync — give it room before --wait gives up
+  timeout: 900
+
+helmfiles:
+  - path: releases/langfuse/helmfile.yaml # langfuse: LLM observability / tracing
