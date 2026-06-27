@@ -6,7 +6,7 @@ releases:
   - name: pihole
     namespace: infra
     chart: mojo2600/pihole
-    version: 2.18.0
+    version: 2.36.0
     values:
       - values.yaml
     hooks:
