@@ -9,6 +9,11 @@ metadata:
   namespace: infra
 spec:
   gatewayClassName: cilium
+  # Pin to .200 (the former nginx-internal IP) so all *.home DNS records
+  # continue to resolve correctly without any DNS changes.
+  addresses:
+    - type: IPAddress
+      value: "192.168.1.200"
   listeners:
     - name: http
       protocol: HTTP
