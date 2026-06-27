@@ -13,8 +13,15 @@ releases:
     values:
       - values.yaml
     hooks:
-      # Apply the LoadBalancer IP pool + L2 announcement policy once the
-      # Cilium CRDs are registered (mirrors the old MetalLB postsync pattern).
+      # Install Gateway API CRDs before the chart runs so Cilium can register
+      # the cilium GatewayClass on startup.
+      - events: ["presync"]
+        command: 'bash'
+        args:
+          - '{{ requiredEnv "PWD" }}/releases/cilium/gateway-crds.sh'
+        showlogs: true
+      # Apply the LoadBalancer IP pool + L2 announcement policy, then stand up
+      # the homelab Gateway once the cilium GatewayClass is Accepted.
       - events: ["postsync"]
         command: 'bash'
         args:

@@ -18,8 +18,9 @@ single-replica here and slimmed down from the chart's production HA defaults
 ClickHouse runs as a single node, so the chart sets `CLICKHOUSE_CLUSTER_ENABLED=false`
 (non-replicated tables) and the bundled Zookeeper is disabled — no coordinator needed.
 
-All PVCs land on `longhorn` via `global.defaultStorageClass`. Ingress is
-`nginx-internal` at `http://langfuse.home`; external-dns syncs the host to Pi-hole.
+All PVCs land on `longhorn` via `global.defaultStorageClass`. The app is exposed at
+`http://langfuse.home` via an HTTPRoute on the homelab Gateway; external-dns syncs the
+hostname to Pi-hole.
 
 ## Secrets
 
@@ -51,7 +52,7 @@ First sync runs PostgreSQL + ClickHouse migrations and can take several minutes
 
 ```bash
 kubectl get pods -n langfuse                       # all Ready
-kubectl get ingress -n langfuse                    # host langfuse.home
+kubectl get httproute -n langfuse                  # Accepted + Programmed
 kubectl logs -n langfuse deploy/langfuse-web       # migrations / startup
 ```
 

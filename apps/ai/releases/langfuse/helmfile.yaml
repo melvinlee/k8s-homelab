@@ -11,3 +11,12 @@ releases:
       - values.yaml
       # secrets file is gitignored — salt/nextauth/encryptionKey + store passwords in resources/secret.yaml
       - resources/secret.yaml
+    hooks:
+      # HTTPRoute for Langfuse via the homelab Gateway (replaces nginx Ingress).
+      - events: ["postsync"]
+        command: kubectl
+        args:
+          - apply
+          - -f
+          - '{{ requiredEnv "PWD" }}/releases/langfuse/resources/httproute.yaml'
+        showlogs: true

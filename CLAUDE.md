@@ -23,10 +23,9 @@ k8s-homelab/
 ├── infrastructure/         # Core cluster infrastructure Helm releases managed by Helmfile
 │   ├── helmfile.yaml        # Root helmfile (includes only core infra releases)
 │   └── releases/            # One sub-helmfile per release
-│       ├── cilium/          # CNI + kube-proxy replacement + LoadBalancer (L2), pool 192.168.1.200-250
-│       ├── ingress-nginx/   # Internal ingress controller (namespace: infra)
+│       ├── cilium/          # CNI + kube-proxy replacement + LoadBalancer (L2) + Gateway API, pool 192.168.1.200-250
 │       ├── pihole/          # DNS + ad-block at 192.168.1.250 (namespace: infra)
-│       ├── external-dns/    # Syncs Ingress hostnames → Pi-hole DNS
+│       ├── external-dns/    # Syncs Gateway HTTPRoute hostnames → Pi-hole DNS
 │       ├── longhorn/        # Distributed block storage (namespace: longhorn-system); tiered ssd/hdd disks
 │       └── metrics-server/  # Backs metrics.k8s.io API (kubectl top / HPA)
 └── apps/                   # Application-layer Helm releases (run on top of the cluster)
@@ -125,7 +124,9 @@ The full register lives in [`docs/adr/`](docs/adr/) (MADR format) — each decis
 
 **Helmfile per-release pattern:** Each release has its own `<name>/helmfile.yaml` + `values.yaml`. An aggregating helmfile combines them via `helmfiles:` paths — `infrastructure/helmfile.yaml` for core infra releases, `apps/observability/helmfile.yaml` for the observability stack. See [ADR-0001](docs/adr/0001-adopt-gitops-with-helmfile.md).
 
-**Cilium post-sync hook:** The cilium release uses a `postsync` hook that runs `releases/cilium/config.sh` to apply the `CiliumLoadBalancerIPPool` and `CiliumL2AnnouncementPolicy` CRs after the chart is installed (same pattern MetalLB previously used).
+**Cilium post-sync hook:** The cilium release uses a `presync` hook (`gateway-crds.sh`) to install Gateway API CRDs, and a `postsync` hook (`config.sh`) to apply the `CiliumLoadBalancerIPPool`, `CiliumL2AnnouncementPolicy`, and the homelab `Gateway` object after the chart is installed.
+
+**Gateway API ingress:** All HTTP ingress is served by Cilium's built-in Gateway controller (GatewayClass `cilium`) — `ingress-nginx` has been removed. A single `Gateway` object (`homelab`, namespace `infra`) receives a LoadBalancer IP from the Cilium L2 pool; each app owns an `HTTPRoute` in its own namespace that attaches to this Gateway. Routes are applied via per-release `postsync` hooks. external-dns watches `gateway-httproute` sources to publish hostnames. See [ADR-0010](docs/adr/0010-gateway-api-migration.md).
 
 ## Naming and Conventions
 

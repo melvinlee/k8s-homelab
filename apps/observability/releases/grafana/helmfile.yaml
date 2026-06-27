@@ -11,3 +11,12 @@ releases:
       - values.yaml
       # secrets file is gitignored — admin credentials in resources/secret.yaml
       - resources/secret.yaml
+    hooks:
+      # HTTPRoute for Grafana via the homelab Gateway (replaces nginx Ingress).
+      - events: ["postsync"]
+        command: kubectl
+        args:
+          - apply
+          - -f
+          - '{{ requiredEnv "PWD" }}/releases/grafana/resources/httproute.yaml'
+        showlogs: true

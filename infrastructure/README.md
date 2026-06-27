@@ -11,10 +11,9 @@ infrastructure/
 │   └── production/
 │       └── values.yaml     # Shared environment values
 └── releases/               # One directory per Helm release
-    ├── cilium/             # CNI + kube-proxy replacement + LoadBalancer (L2)
-    ├── ingress-nginx/      # Ingress controller
+    ├── cilium/             # CNI + kube-proxy replacement + LoadBalancer (L2) + Gateway API
     ├── pihole/             # Home DNS + ad-blocking
-    ├── external-dns/       # Auto DNS records from Ingress
+    ├── external-dns/       # Auto DNS records from Gateway HTTPRoutes
     └── longhorn/           # Distributed block storage
 ```
 
@@ -22,11 +21,10 @@ infrastructure/
 
 | Release | Namespace | Chart | Version | Purpose |
 | --- | --- | --- | --- | --- |
-| cilium | `kube-system` | cilium/cilium | 1.17.1 | CNI + kube-proxy replacement + LoadBalancer L2, IP pool `192.168.1.200-250` |
-| ingress-nginx-internal | `infra` | ingress-nginx/ingress-nginx | 4.12.0 | Internal ingress controller |
+| cilium | `kube-system` | cilium/cilium | 1.17.1 | CNI + kube-proxy replacement + LoadBalancer L2 + Gateway API; IP pool `192.168.1.200-250` |
 | pihole | `infra` | mojo2600/pihole | 2.18.0 | DNS server at `192.168.1.250` |
-| externaldns-pihole | `infra` | bitnami/external-dns | 8.7.5 | Syncs Ingress hostnames to Pi-hole DNS |
-| longhorn | `infra` | longhorn/longhorn | 1.6.2 | Distributed block storage |
+| externaldns-unifi | `infra` | bitnami/external-dns | 9.0.3 | Syncs Gateway HTTPRoute hostnames to Pi-hole DNS |
+| longhorn | `longhorn-system` | longhorn/longhorn | 1.7.2 | Distributed block storage |
 
 ## Usage
 

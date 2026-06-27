@@ -34,3 +34,11 @@ releases:
           - -f
           - '{{ requiredEnv "PWD" }}/releases/longhorn/resources/storageclass-hdd.yaml'
         showlogs: true
+      # HTTPRoute for the Longhorn UI via the homelab Gateway (replaces nginx Ingress).
+      - events: ["postsync"]
+        command: kubectl
+        args:
+          - apply
+          - -f
+          - '{{ requiredEnv "PWD" }}/releases/longhorn/resources/httproute.yaml'
+        showlogs: true
