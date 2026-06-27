@@ -18,6 +18,7 @@ serviceDns:
   annotations:
     lbipam.cilium.io/sharing-key: pihole-svc
   type: LoadBalancer
+  externalTrafficPolicy: Cluster
 replicaCount: 1
 
 dnsmasq:
