@@ -12,6 +12,7 @@ serviceWeb:
     # Cilium LB-IPAM equivalent of MetalLB's allow-shared-ip: web + DNS share .250.
     lbipam.cilium.io/sharing-key: pihole-svc
   type: LoadBalancer
+  externalTrafficPolicy: Cluster
 serviceDns:
   loadBalancerIP: 192.168.1.250
   annotations:
