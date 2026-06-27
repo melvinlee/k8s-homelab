@@ -9,3 +9,12 @@ releases:
     version: 2.18.0
     values:
       - values.yaml
+    hooks:
+      # HTTPRoute for the Pi-hole admin UI via the homelab Gateway (replaces nginx Ingress).
+      - events: ["postsync"]
+        command: kubectl
+        args:
+          - apply
+          - -f
+          - '{{ requiredEnv "PWD" }}/releases/pihole/resources/httproute.yaml'
+        showlogs: true

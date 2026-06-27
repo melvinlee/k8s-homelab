@@ -49,8 +49,10 @@ sidecars:
 serviceAccount:
   create: true
   name: "external-dns-unifi"
-ingressClassFilters:
-  - nginx-internal
+# Watch Gateway API HTTPRoutes and plain Services (Ingress source removed with nginx).
+sources:
+  - service
+  - gateway-httproute
 resources:
   requests:
     cpu: 100m

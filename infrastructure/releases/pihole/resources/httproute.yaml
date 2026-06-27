@@ -1,0 +1,20 @@
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: pihole
+  namespace: infra
+spec:
+  parentRefs:
+    - name: homelab
+      namespace: infra
+  hostnames:
+    - pihole.home
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: pihole-web
+          port: 80

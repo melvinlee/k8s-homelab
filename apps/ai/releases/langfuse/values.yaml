@@ -20,17 +20,8 @@ langfuse:
   # resources/secret.yaml (merged on top of this file by helmfile.yaml).
 
   nextauth:
-    # Must be the canonical externally-reachable URL (the ingress host below).
+    # Must be the canonical externally-reachable URL (the HTTPRoute hostname).
     url: http://langfuse.home
-
-  ingress:
-    enabled: true
-    className: nginx-internal
-    hosts:
-      - host: langfuse.home
-        paths:
-          - path: /
-            pathType: Prefix
 
   # Keep langfuse pods on worker nodes (control-plane is tainted NoSchedule, but
   # this is explicit and mirrors the grafana release).

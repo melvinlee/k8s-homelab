@@ -54,3 +54,8 @@ k8sClientRateLimit:
 operator:
   # Single control-plane node; one operator replica is enough.
   replicas: 1
+
+# --- Gateway API (replaces ingress-nginx) ---
+# Requires Gateway API CRDs to be installed first (see gateway-crds.sh presync hook).
+gatewayAPI:
+  enabled: true

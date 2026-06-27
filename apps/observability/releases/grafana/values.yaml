@@ -43,13 +43,6 @@ persistence:
   accessModes:
     - ReadWriteOnce
 
-ingress:
-  enabled: true
-  ingressClassName: nginx-internal
-  hosts:
-    - grafana.home
-  path: /
-  pathType: Prefix
 
 datasources:
   datasources.yaml:
@@ -96,10 +89,6 @@ dashboardProviders:
 
 dashboards:
   default:
-    nginx-ingress:
-      gnetId: 9614
-      revision: 1
-      datasource: Prometheus
     loki-app-logs:
       gnetId: 13639
       revision: 2
