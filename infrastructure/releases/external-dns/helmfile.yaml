@@ -1,11 +1,11 @@
 repositories:
-  - name: bitnami
-    url: https://charts.bitnami.com/bitnami
+  - name: kubernetes-sigs
+    url: https://kubernetes-sigs.github.io/external-dns/
 
 releases:
-  - name: externaldns-unifi
+  - name: externaldns
     namespace: infra
-    chart: bitnami/external-dns
-    version: 9.0.3
+    chart: kubernetes-sigs/external-dns
+    version: 1.20.0
     values:
       - values.yaml
