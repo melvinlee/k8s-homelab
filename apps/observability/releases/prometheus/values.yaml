@@ -52,6 +52,7 @@ prometheus:
     retention: 7d
     retentionSize: 8GB
     walCompression: true
+    enableRemoteWriteReceiver: true
 
     # Non-root security context (mirrors the old prometheus chart config)
     securityContext:

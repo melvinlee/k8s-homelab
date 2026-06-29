@@ -9,3 +9,12 @@ releases:
     version: 84.3.0
     values:
       - values.yaml
+    hooks:
+      # HTTPRoute for Prometheus via the homelab Gateway.
+      - events: ["postsync"]
+        command: kubectl
+        args:
+          - apply
+          - -f
+          - '{{ requiredEnv "PWD" }}/releases/prometheus/resources/httproute.yaml'
+        showlogs: true
