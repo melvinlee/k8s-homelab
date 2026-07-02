@@ -37,3 +37,5 @@ decisions we have since superseded (Flannel → Cilium, MetalLB → Cilium L2,
 | [0007](0007-secrets-sops-and-external-secrets-operator.md) | Manage secrets with SOPS/age and External Secrets Operator | accepted |
 | [0008](0008-tiered-ssd-hdd-longhorn-storage.md) | Add a tiered ssd/hdd Longhorn storage layout | accepted |
 | [0009](0009-longhorn-replica-auto-balance-workers-only.md) | Enable Longhorn replica auto-balance, workers only | accepted |
+| [0010](0010-gateway-api-migration.md) | Migrate cluster ingress from ingress-nginx to Kubernetes Gateway API (Cilium GatewayClass) | accepted |
+| [0011](0011-trivy-operator-vulnerability-scanning.md) | Add Trivy Operator for continuous vulnerability and configuration-audit scanning | accepted |

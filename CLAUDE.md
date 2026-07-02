@@ -36,13 +36,17 @@ k8s-homelab/
     │       ├── loki/        # Log aggregation
     │       ├── grafana/     # Dashboards
     │       └── alloy/       # Grafana Alloy log/metrics collector
-    └── ai/                  # AI/LLM stack (namespace: langfuse)
+    ├── ai/                  # AI/LLM stack (namespace: langfuse)
+    │   ├── helmfile.yaml    # Aggregating helmfile — includes the release(s) below
+    │   └── releases/
+    │       └── langfuse/    # LLM observability / tracing (postgresql + clickhouse + valkey + minio bundled, single-replica)
+    └── security/            # Security scanning stack (namespace: trivy-system)
         ├── helmfile.yaml    # Aggregating helmfile — includes the release(s) below
         └── releases/
-            └── langfuse/    # LLM observability / tracing (postgresql + clickhouse + valkey + minio bundled, single-replica)
+            └── trivy-operator/ # Vulnerability + config-audit scanning; emits VulnerabilityReport CRDs + Prometheus metrics
 ```
 
-> The releases under `apps/observability/` and `apps/ai/` are each aggregated by their own `helmfile.yaml` and applied as a unit — they are **not** wired into the root `infrastructure/helmfile.yaml`.
+> The releases under `apps/observability/`, `apps/ai/`, and `apps/security/` are each aggregated by their own `helmfile.yaml` and applied as a unit — they are **not** wired into the root `infrastructure/helmfile.yaml`.
 
 ## Common Commands
 
@@ -67,6 +71,9 @@ cd apps/observability && helmfile -f releases/loki/helmfile.yaml apply
 
 # Deploy the AI stack (Langfuse + bundled backing stores)
 cd apps/ai && helmfile -f releases/langfuse/helmfile.yaml apply
+
+# Deploy the security stack (Trivy Operator)
+cd apps/security && helmfile apply
 ```
 
 ### Talos Operations
@@ -127,6 +134,8 @@ The full register lives in [`docs/adr/`](docs/adr/) (MADR format) — each decis
 **Cilium post-sync hook:** The cilium release uses a `presync` hook (`gateway-crds.sh`) to install Gateway API CRDs, and a `postsync` hook (`config.sh`) to apply the `CiliumLoadBalancerIPPool`, `CiliumL2AnnouncementPolicy`, and the homelab `Gateway` object after the chart is installed.
 
 **Gateway API ingress:** All HTTP ingress is served by Cilium's built-in Gateway controller (GatewayClass `cilium`) — `ingress-nginx` has been removed. A single `Gateway` object (`homelab`, namespace `infra`) receives a LoadBalancer IP from the Cilium L2 pool; each app owns an `HTTPRoute` in its own namespace that attaches to this Gateway. Routes are applied via per-release `postsync` hooks. external-dns watches `gateway-httproute` sources to publish hostnames. See [ADR-0010](docs/adr/0010-gateway-api-migration.md).
+
+**Vulnerability scanning:** Trivy Operator runs in `trivy-system` (standalone mode — no separate Trivy server) and emits `VulnerabilityReport` and `ConfigAuditReport` CRDs cluster-wide. Scanning is scoped to CRITICAL/HIGH, unfixed-only to reduce noise. A ServiceMonitor feeds results into Prometheus; Grafana dashboard gnetId 17813 visualises them. `trivy-system` is exempted from PodSecurity admission in `talos/patches/cp-01.yaml` — scan Jobs do not satisfy the `restricted` profile. See [ADR-0011](docs/adr/0011-trivy-operator-vulnerability-scanning.md).
 
 ## Naming and Conventions
 

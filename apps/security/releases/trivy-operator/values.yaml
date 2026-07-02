@@ -1,0 +1,65 @@
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: node-role/worker
+              operator: In
+              values:
+                - "true"
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 65534
+  runAsGroup: 65534
+
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: true
+
+operator:
+  # Emit per-CVE metrics so the Grafana dashboard can show top vulnerabilities.
+  metricsVulnIdEnabled: true
+  # Restrict reconciliation to these resource kinds to reduce noise in a homelab.
+  targetWorkloads: "pod,replicaset,replicationcontroller,statefulset,daemonset,cronjob,job"
+  # Give scan jobs enough time to pull the trivy image and complete the scan.
+  scanJobTimeout: 5m
+
+# node-collector jobs run on every node including the control-plane, which has
+# the node-role.kubernetes.io/control-plane:NoSchedule taint. Without this
+# toleration the jobs stay Pending and never complete.
+nodeCollector:
+  tolerations:
+    - key: node-role.kubernetes.io/control-plane
+      operator: Exists
+      effect: NoSchedule
+
+trivy:
+  # Only surface vulnerabilities that have a fix available — reduces noise.
+  ignoreUnfixed: true
+  severity: CRITICAL,HIGH
+  # Standalone mode: Trivy binary embedded in the scan Job; no separate server needed.
+  mode: Standalone
+
+serviceMonitor:
+  enabled: true
+  labels:
+    release: prometheus
+
+# Disable compliance reports (CIS, NSA, PSS benchmarks). The chart creates
+# ClusterComplianceReport instances by default, which require the CRD to exist
+# before `helm diff` can render the manifest — a bootstrapping catch-22.
+# Vulnerability scanning is what we need; compliance auditing is out of scope.
+compliance:
+  specs: []
