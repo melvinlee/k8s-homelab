@@ -1,0 +1,11 @@
+repositories:
+  - name: aquasecurity
+    url: https://aquasecurity.github.io/helm-charts/
+
+releases:
+  - name: trivy-operator
+    namespace: trivy-system
+    chart: aquasecurity/trivy-operator
+    version: 0.33.2
+    values:
+      - values.yaml

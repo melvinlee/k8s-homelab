@@ -1,0 +1,8 @@
+helmDefaults:
+  createNamespace: true
+  recreatePods: true
+  wait: true
+  timeout: 600
+
+helmfiles:
+  - path: releases/trivy-operator/helmfile.yaml # trivy-operator: vulnerability and config-audit scanning
