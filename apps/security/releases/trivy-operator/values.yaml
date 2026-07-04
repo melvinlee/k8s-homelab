@@ -35,6 +35,11 @@ operator:
   targetWorkloads: "pod,replicaset,replicationcontroller,statefulset,daemonset,cronjob,job"
   # Give scan jobs enough time to pull the trivy image and complete the scan.
   scanJobTimeout: 5m
+  # Limit concurrent scan jobs to 2 to prevent cache-lock races on multi-container pods
+  # (Grafana, Prometheus, Cilium, Longhorn all have sidecars that spawn simultaneous
+  # scan jobs which race on a shared trivy cache path — issue #63).
+  # Default is 10; a lower value serialises scans enough to avoid the lock contention.
+  scanJobsConcurrentLimit: 2
 
 # node-collector jobs run on every node including the control-plane, which has
 # the node-role.kubernetes.io/control-plane:NoSchedule taint. Without this

@@ -68,6 +68,8 @@ datasources:
           httpHeaderValue1: "fake"
 
 sidecar:
+  image:
+    tag: "2.8.0"  # bumped from 2.5.0 — clears 2 CRITICAL / 22 HIGH (outdated Alpine/OpenSSL base); issue #63
   dashboards:
     enabled: true
     label: grafana_dashboard
