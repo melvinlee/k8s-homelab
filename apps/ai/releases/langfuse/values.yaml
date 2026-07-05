@@ -165,12 +165,50 @@ clickhouse:
       memory: 2Gi
   persistence:
     enabled: true
-    size: 20Gi
+    # Resized 20Gi -> 40Gi (issue #69): the 20Gi volume hit 100% and ClickHouse
+    # stopped accepting writes ("not enough space"). The live PVC was expanded
+    # online via `kubectl patch` (Longhorn allowVolumeExpansion=true); this value
+    # keeps a re-provisioned StatefulSet at the same size. NOTE: a StatefulSet
+    # volumeClaimTemplate is immutable, so bumping this alone will NOT resize an
+    # existing PVC and `helmfile apply` may error on the template diff — patch the
+    # live PVC directly, or recreate the STS with
+    # `kubectl -n langfuse delete statefulset langfuse-clickhouse-shard0 --cascade=orphan`
+    # (keeps pods/PVCs) then re-apply. Growth is bounded by the retention policy
+    # (see releases/langfuse/README.md).
+    size: 40Gi
   # With replicaCount 1 the chart sets CLICKHOUSE_CLUSTER_ENABLED=false, so langfuse
   # uses non-replicated MergeTree tables and needs no coordinator — drop the bundled
   # Zookeeper (default is a 3-node ensemble) entirely.
   zookeeper:
     enabled: false
+  # ClickHouse's own internal system-log tables — NOT Langfuse data — are what
+  # filled the volume in issue #69. The always-on query profiler
+  # (query_profiler_*_period_ns = 1s) sampled every worker query thread and wrote
+  # ~892M rows / 16Gi into system.trace_log in 18 days, while actual Langfuse trace
+  # data was <1Mi. Bound the system logs two ways (both take effect when ClickHouse
+  # (re)starts; the running instance was fixed live — see releases/langfuse/README.md):
+  #   1. usersExtraOverrides — turn the sampling profiler OFF (no need to profile a
+  #      homelab OLAP backend) so system.trace_log stops growing at the source.
+  #   2. extraOverrides — cap every noisy *_log table at a 3-day TTL as a backstop.
+  usersExtraOverrides: |
+    <clickhouse>
+      <profiles>
+        <default>
+          <query_profiler_real_time_period_ns>0</query_profiler_real_time_period_ns>
+          <query_profiler_cpu_time_period_ns>0</query_profiler_cpu_time_period_ns>
+        </default>
+      </profiles>
+    </clickhouse>
+  extraOverrides: |
+    <clickhouse>
+      <trace_log><ttl>event_date + INTERVAL 3 DAY DELETE</ttl></trace_log>
+      <text_log><ttl>event_date + INTERVAL 3 DAY DELETE</ttl></text_log>
+      <metric_log><ttl>event_date + INTERVAL 3 DAY DELETE</ttl></metric_log>
+      <asynchronous_metric_log><ttl>event_date + INTERVAL 3 DAY DELETE</ttl></asynchronous_metric_log>
+      <query_log><ttl>event_date + INTERVAL 3 DAY DELETE</ttl></query_log>
+      <query_thread_log><ttl>event_date + INTERVAL 3 DAY DELETE</ttl></query_thread_log>
+      <part_log><ttl>event_date + INTERVAL 3 DAY DELETE</ttl></part_log>
+    </clickhouse>
 
 # MinIO — event & media blob storage (Bitnami subchart)
 #
