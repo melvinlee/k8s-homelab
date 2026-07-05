@@ -56,6 +56,16 @@ trivy:
   severity: CRITICAL,HIGH
   # Standalone mode: Trivy binary embedded in the scan Job; no separate server needed.
   mode: Standalone
+  # Scan job container resources (default chart limit is 500M, which OOMKilled the
+  # scan job for langfuse-web:3.201.1 — a larger Node.js image with a deep dependency
+  # tree needs more headroom for Trivy's SBOM/vuln analysis. Issue #67.
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 1Gi
 
 serviceMonitor:
   enabled: true

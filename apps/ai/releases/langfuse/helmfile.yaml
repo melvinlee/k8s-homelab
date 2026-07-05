@@ -6,7 +6,7 @@ releases:
   - name: langfuse
     namespace: langfuse
     chart: langfuse/langfuse
-    version: 1.5.33 # app 3.177.0
+    version: 1.5.37 # app 3.201.1
     values:
       - values.yaml
       # secrets file is gitignored — salt/nextauth/encryptionKey + store passwords in resources/secret.yaml
