@@ -20,8 +20,15 @@ config:
   kubernetes:
     mode: cluster
     gateway: true
-  # Discovery supplies all services; no static entries.
-  services: []
+  # Discovery supplies in-cluster services; static entries cover LAN devices outside
+  # the cluster (no HTTPRoute to annotate). Same-named groups merge with discovered ones.
+  services:
+    - Network:
+        - KVM:
+            href: http://kvm.home
+            icon: mdi-console-network
+            description: Network KVM (out-of-band console)
+            siteMonitor: http://kvm.home
   bookmarks: []
   settingsString: |
     title: Homelab
