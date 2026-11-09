@@ -27,6 +27,13 @@ loki:
     retention_enabled: true
     delete_request_store: s3
 
+  # Bound WAL replay so a restart can't OOM the ingester (default ceiling is 4GB,
+  # far above the 1Gi limit) and leave an unflushed WAL growing until the 10Gi PVC fills.
+  ingester:
+    wal:
+      replay_memory_ceiling: 512MB
+      flush_on_shutdown: true
+
   schemaConfig:
     configs:
       - from: "2024-01-01"
@@ -68,10 +75,10 @@ ingester:
   resources:
     requests:
       cpu: 100m
-      memory: 256Mi
+      memory: 512Mi
     limits:
       cpu: 500m
-      memory: 512Mi
+      memory: 1Gi
   affinity: {}
   persistence:
     enabled: true
