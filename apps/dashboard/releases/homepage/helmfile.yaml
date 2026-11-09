@@ -1,0 +1,20 @@
+repositories:
+  - name: jameswynn
+    url: http://jameswynn.github.io/helm-charts
+
+releases:
+  - name: homepage
+    namespace: dashboard
+    chart: jameswynn/homepage
+    version: 2.1.0
+    values:
+      - values.yaml
+    hooks:
+      # HTTPRoute for Homepage via the homelab Gateway.
+      - events: ["postsync"]
+        command: kubectl
+        args:
+          - apply
+          - -f
+          - '{{ requiredEnv "PWD" }}/releases/homepage/resources/httproute.yaml'
+        showlogs: true
