@@ -29,6 +29,14 @@ containerSecurityContext:
   readOnlyRootFilesystem: true
 
 operator:
+  # Pin the operator replica count in Git so an out-of-band scale-down shows up in
+  # `helmfile diff` and is reasserted by `helmfile apply` (chart default is 1).
+  replicas: 1
+  # Talos has an immutable root filesystem with no /etc/systemd, so the node-collector
+  # Job (CIS node checks) fails every run with CreateContainerError. Disable infra
+  # assessment, and cluster compliance which depends on node-collector data.
+  infraAssessmentScannerEnabled: false
+  clusterComplianceEnabled: false
   # Emit per-CVE metrics so the Grafana dashboard can show top vulnerabilities.
   metricsVulnIdEnabled: true
   # Restrict reconciliation to these resource kinds to reduce noise in a homelab.
@@ -41,9 +49,8 @@ operator:
   # Default is 10; a lower value serialises scans enough to avoid the lock contention.
   scanJobsConcurrentLimit: 2
 
-# node-collector jobs run on every node including the control-plane, which has
-# the node-role.kubernetes.io/control-plane:NoSchedule taint. Without this
-# toleration the jobs stay Pending and never complete.
+# Node-collector is effectively disabled (operator.infraAssessmentScannerEnabled: false),
+# so these tolerations are inert; kept so re-enabling on a non-Talos node still works.
 nodeCollector:
   tolerations:
     - key: node-role.kubernetes.io/control-plane
