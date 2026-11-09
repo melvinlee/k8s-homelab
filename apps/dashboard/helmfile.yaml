@@ -1,0 +1,8 @@
+helmDefaults:
+  createNamespace: true
+  recreatePods: true
+  wait: true
+  timeout: 600
+
+helmfiles:
+  - path: releases/homepage/helmfile.yaml # homepage: homelab dashboard with Gateway API service discovery

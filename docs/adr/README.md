@@ -39,3 +39,4 @@ decisions we have since superseded (Flannel → Cilium, MetalLB → Cilium L2,
 | [0009](0009-longhorn-replica-auto-balance-workers-only.md) | Enable Longhorn replica auto-balance, workers only | accepted |
 | [0010](0010-gateway-api-migration.md) | Migrate cluster ingress from ingress-nginx to Kubernetes Gateway API (Cilium GatewayClass) | accepted |
 | [0011](0011-trivy-operator-vulnerability-scanning.md) | Add Trivy Operator for continuous vulnerability and configuration-audit scanning | accepted |
+| [0012](0012-homepage-dashboard-with-gateway-api-discovery.md) | Adopt Homepage as the homelab dashboard with Gateway API service discovery | accepted |

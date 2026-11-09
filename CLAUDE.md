@@ -44,9 +44,13 @@ k8s-homelab/
         ├── helmfile.yaml    # Aggregating helmfile — includes the release(s) below
         └── releases/
             └── trivy-operator/ # Vulnerability + config-audit scanning; emits VulnerabilityReport CRDs + Prometheus metrics
+    └── dashboard/           # Homelab dashboard (namespace: dashboard)
+        ├── helmfile.yaml    # Aggregating helmfile — includes the release(s) below
+        └── releases/
+            └── homepage/    # Homepage; discovers services from HTTPRoute gethomepage.dev/* annotations
 ```
 
-> The releases under `apps/observability/`, `apps/ai/`, and `apps/security/` are each aggregated by their own `helmfile.yaml` and applied as a unit — they are **not** wired into the root `infrastructure/helmfile.yaml`.
+> The releases under `apps/observability/`, `apps/ai/`, `apps/security/`, and `apps/dashboard/` are each aggregated by their own `helmfile.yaml` and applied as a unit — they are **not** wired into the root `infrastructure/helmfile.yaml`.
 
 ## Common Commands
 
@@ -74,6 +78,9 @@ cd apps/ai && helmfile -f releases/langfuse/helmfile.yaml apply
 
 # Deploy the security stack (Trivy Operator)
 cd apps/security && helmfile apply
+
+# Deploy the Homepage dashboard
+cd apps/dashboard && helmfile apply
 ```
 
 ### Talos Operations
@@ -136,6 +143,8 @@ The full register lives in [`docs/adr/`](docs/adr/) (MADR format) — each decis
 **Gateway API ingress:** All HTTP ingress is served by Cilium's built-in Gateway controller (GatewayClass `cilium`) — `ingress-nginx` has been removed. A single `Gateway` object (`homelab`, namespace `infra`) receives a LoadBalancer IP from the Cilium L2 pool; each app owns an `HTTPRoute` in its own namespace that attaches to this Gateway. Routes are applied via per-release `postsync` hooks. external-dns watches `gateway-httproute` sources to publish hostnames. See [ADR-0010](docs/adr/0010-gateway-api-migration.md).
 
 **Vulnerability scanning:** Trivy Operator runs in `trivy-system` (standalone mode — no separate Trivy server) and emits `VulnerabilityReport` and `ConfigAuditReport` CRDs cluster-wide. Scanning is scoped to CRITICAL/HIGH, unfixed-only to reduce noise. A ServiceMonitor feeds results into Prometheus; Grafana dashboard gnetId 17813 visualises them. `trivy-system` is exempted from PodSecurity admission in `talos/patches/cp-01.yaml` — scan Jobs do not satisfy the `restricted` profile. See [ADR-0011](docs/adr/0011-trivy-operator-vulnerability-scanning.md).
+
+**Homepage dashboard:** Homepage runs in `dashboard` (chart `jameswynn/homepage`, stateless) at `homepage.home` via an HTTPRoute postsync hook. It discovers services from `gethomepage.dev/*` annotations on HTTPRoutes (`kubernetes.yaml`: `mode: cluster`, `gateway: true`) — to list a new app, annotate its HTTPRoute. Pi-hole and Grafana widgets are deferred until External Secrets Operator (#47) can supply `HOMEPAGE_VAR_*` credentials. See [ADR-0012](docs/adr/0012-homepage-dashboard-with-gateway-api-discovery.md).
 
 ## Naming and Conventions
 
